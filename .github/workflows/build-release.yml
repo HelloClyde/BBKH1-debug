@@ -21,6 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           submodules: true
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -34,6 +35,12 @@ jobs:
           if ($env:RELEASE_TAG -ne "v$((Get-Content VERSION -Raw).Trim())") { throw 'Tag and VERSION differ' }
       - name: Install pinned dependencies and toolchain
         run: |
+          $shallow = (git -C vendor/h1-sdk rev-parse --is-shallow-repository).Trim()
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          if ($shallow -eq 'true') {
+            git -C vendor/h1-sdk fetch --unshallow origin
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
           python -m pip install -r requirements.txt
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python scripts/install_toolchain.py
@@ -61,6 +68,8 @@ jobs:
       - name: Package application, full source and skill
         run: |
           python scripts/package_release.py --commit "$env:GITHUB_SHA"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/test_source_package.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

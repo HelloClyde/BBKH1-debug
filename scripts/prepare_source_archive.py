@@ -10,7 +10,10 @@ SDK=ROOT/'vendor/h1-sdk'
 
 def main():
     if (SDK/'.git').exists():
-        print('SDK Git metadata already exists; nothing changed.');return
+        head=subprocess.run(['git','-C',str(SDK),'rev-parse','HEAD'],capture_output=True,text=True)
+        if head.returncode or head.stdout.strip()!='067fe072477861dfc8949d7b1a55279fb92d2548':
+            raise RuntimeError('Existing SDK Git metadata is incomplete or uses another revision; extract the corrected source ZIP into a fresh directory')
+        print('Pinned SDK Git metadata already exists; nothing changed.');return
     manifest=json.loads((ROOT/'vendor/h1-sdk.snapshot.json').read_text(encoding='utf-8'))
     for name,digest in manifest['files'].items():
         assert hashlib.sha256((SDK/name).read_bytes()).hexdigest()==digest,'SDK snapshot changed: '+name

@@ -56,6 +56,7 @@ def main():
         path=ROOT/name
         if path.is_file():items.append((prefix+name,path))
     sdk=ROOT/'vendor/h1-sdk'
+    assert git('rev-parse','--is-shallow-repository',cwd=sdk).decode().strip()=='false', 'SDK must have complete history before creating a source bundle'
     sdk_files=tracked(sdk)
     items += [(prefix+'vendor/h1-sdk/'+name,sdk/name) for name in sdk_files]
     bundle=ROOT/'build/h1-sdk.bundle'
@@ -65,7 +66,7 @@ def main():
         'bundle_sha256':sha(bundle),'files':{name:sha(sdk/name) for name in sdk_files}},indent=2)+'\n',encoding='utf-8')
     items += [(prefix+'vendor/h1-sdk.bundle',bundle),(prefix+'vendor/h1-sdk.snapshot.json',snapshot)]
     zipfiles(OUT/f'H1Debug-{tag}-source.zip',items)
-    shutil.copy2(ROOT/'docs/release-v1.0.0.md',OUT/'RELEASE-NOTES.md')
+    shutil.copy2(ROOT/f'docs/release-{tag}.md',OUT/'RELEASE-NOTES.md')
     assets=[{'name':p.name,'size':p.stat().st_size,'sha256':sha(p)} for p in sorted(OUT.iterdir()) if p.name not in ('release-manifest.json','SHA256SUMS.txt')]
     manifest={'tag':tag,'commit':commit,'sdk_commit':git('rev-parse','HEAD',cwd=sdk).decode().strip(),
               'bda_sha256':sha(OUT/'H1Debug.bda'),'assets':assets}
