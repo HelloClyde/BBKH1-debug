@@ -1,0 +1,3 @@
+# Exact source bytes participate in resident image_id; do not normalize line endings.
+* -text
+* whitespace=cr-at-eol,-blank-at-eof

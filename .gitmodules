@@ -1,0 +1,3 @@
+[submodule "vendor/h1-sdk"]
+	path = vendor/h1-sdk
+	url = https://github.com/MrDefinition1999/bbk-h1-bda-sdk.git

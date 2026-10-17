@@ -1,0 +1,10 @@
+{
+  "tool": "image_gen.imagegen",
+  "generated_at": "2026-10-16",
+  "purpose": "BBK H1 native-style H1 Debug app icon",
+  "prompt": "Edit the existing diagnostic app icon (image 2) into a finished BBK H1 handheld utility app icon. Image 1 is STYLE REFERENCE ONLY: match the first row of native H1 icons, with a thick softly rounded square tile, silver-white glossy top highlight, subtle beveled edge, smooth cyan-to-deep-blue vertical gradient, gentle perspective and a clear small dimensional object. Replace the green X entirely. Main motif: a small dark computer monitor with a bright green simple >_ terminal symbol, with a chunky silver USB plug and a short curved cable at its lower-right; keep silhouette bold and readable at 57x57 pixels. A friendly 2000s skeuomorphic utility icon, compact and restrained, matching the native electrical-experiment and media-player icons in the reference. Output ONE square app icon only, no contact sheet, no name or label, no explanatory text, no letters beyond the tiny >_ symbol. Tile nearly fills the canvas with only a narrow transparent margin; outside the rounded tile is genuinely transparent. Strong simple shapes, clean edge, no tiny circuitry, no photoreal device photo, no flat modern outline icon. Keep the app icon's square aspect ratio; output a high-resolution RGBA asset suitable for downscaling.",
+  "source": "h1-debug/assets/icon.png",
+  "style_reference": "build/icon-design/reference/h1-reference-icons.png",
+  "replaced_icon": "build/h1-debug-icon/original/H1调试-1-57x57x24.png",
+  "transparent_background": true
+}

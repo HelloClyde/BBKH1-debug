@@ -1,0 +1,589 @@
+{
+  "date": "2026-10-17",
+  "version": "resident-debug-deploy-r1",
+  "bda_sha256": "4214dbc11266c59359dac38d3ad6386c3d727e0f534a6520e952c5872cbd8b3d",
+  "image_id": "7195598f",
+  "bda_bytes": 98828,
+  "resident_bytes": 725472,
+  "physical_hardware_tested": true,
+  "hardware_verified": true,
+  "firmware": "H1/Y100 V1.41",
+  "capabilities": 4095,
+  "installation": {
+    "path": "F:\\应用\\程序\\H1Debug.bda",
+    "sha256": "4214DBC11266C59359DAC38D3AD6386C3D727E0F534A6520E952C5872CBD8B3D",
+    "previous_backup": "build\\h1-debug\\device-before-20261017-162054-5718.bda",
+    "hardware_verified": false
+  },
+  "deployment": {
+    "passed": true,
+    "one_client_session": true,
+    "physical_usb_disconnect_during_test": false,
+    "usb_reset_count_unchanged": true,
+    "versions": [
+      {
+        "version": 1,
+        "sha256": "da2c8fc42409575e583529f0f0229670f8d60434feaf2ac372942d12d39baf32",
+        "bytes": 32020,
+        "device_crc_verified": true,
+        "upload_commit_seconds": 2.905999999959022,
+        "refresh_seconds": 0.09300000010989606,
+        "run_entry_seconds": 0.1720000000204891,
+        "payload_started": true,
+        "marker_before": [
+          827343957,
+          1,
+          0,
+          0
+        ],
+        "marker_advanced": [
+          827343957,
+          1,
+          1,
+          0
+        ],
+        "usb_readback_sha256": "da2c8fc42409575e583529f0f0229670f8d60434feaf2ac372942d12d39baf32"
+      },
+      {
+        "version": 2,
+        "sha256": "d1a4308b674d16a470c5f991f69bb9fa46af58c266ad6f8b45b651e3c05f1895",
+        "bytes": 32248,
+        "device_crc_verified": true,
+        "upload_commit_seconds": 3.577999999979511,
+        "refresh_seconds": 0.10999999986961484,
+        "run_entry_seconds": 0.15699999989010394,
+        "payload_started": true,
+        "marker_before": [
+          827343957,
+          2,
+          0,
+          0
+        ],
+        "marker_advanced": [
+          827343957,
+          2,
+          1,
+          0
+        ],
+        "usb_readback_sha256": "d1a4308b674d16a470c5f991f69bb9fa46af58c266ad6f8b45b651e3c05f1895"
+      }
+    ],
+    "desktop_titles_visually_confirmed": [
+      "USB测试1",
+      "USB测试2"
+    ],
+    "deleted_test_icon_disappeared": true,
+    "test_files_removed": true
+  },
+  "file_management": {
+    "passed": true,
+    "actions": [
+      "mkdir",
+      "mkdir_child",
+      "put",
+      "list",
+      "nonempty_rmdir_refused",
+      "rename_directory",
+      "rename_file",
+      "get",
+      "put_empty",
+      "get_empty",
+      "delete_file",
+      "delete_empty",
+      "empty_list",
+      "rmdir_child",
+      "rmdir_parent"
+    ],
+    "binary_roundtrip_bytes": 65537,
+    "zero_length_roundtrip": true,
+    "chinese_paths": true,
+    "foreground_during_management": {
+      "before": [
+        827343957,
+        1,
+        9,
+        0
+      ],
+      "after": [
+        827343957,
+        1,
+        47,
+        0
+      ]
+    },
+    "nonempty_rmdir_refused": true
+  },
+  "background_debug": {
+    "compute": {
+      "variants": [
+        {
+          "module": {
+            "abi": 1,
+            "base": 2186782560,
+            "image_capacity": 65536,
+            "image_size": 160,
+            "memory_size": 176,
+            "entry_offset": 0,
+            "crc32": 1818053700,
+            "sha256": "b58cfdd39f49493adc3b5956375f39f345897dbb068155586667f3db7644bf94",
+            "ELF_sha256": "15374f4b45d41fe025872e758a5c1fe393182caecd5c9d52fc5c810bc1fe01f5",
+            "source": "build\\h1-debug-deploy-hardware-20261017\\acceptance\\compute\\variant-0\\compute.c",
+            "source_sha256": "99d5eed92ac36179c29d4a43cecc2a501e6a789b394757e9e35378c744c19020",
+            "ABI_sha256": "7b9d1ea308fba1bdcf95525979362fdeea5e3cdcdf7856ba692335f0fe408b64",
+            "binary": "build\\h1-debug-deploy-hardware-20261017\\acceptance\\compute\\variant-0\\module.bin",
+            "hardware_verified": false,
+            "sandbox": false,
+            "forced_preemption": false
+          },
+          "upload": {
+            "abi": 1,
+            "base": 2186782560,
+            "image_capacity": 65536,
+            "scratch_capacity": 16384,
+            "stack_capacity": 32768,
+            "output_capacity": 4096,
+            "state": 2,
+            "image_size": 160,
+            "memory_size": 176,
+            "entry_offset": 0,
+            "upload_crc": 1818053700,
+            "written": 160,
+            "runs": 0,
+            "flags": 0,
+            "forced_preemption": 0,
+            "api_size": 28
+          },
+          "runs": [
+            {
+              "execution": {
+                "state": 5,
+                "image_size": 160,
+                "memory_size": 176,
+                "entry_offset": 0,
+                "upload_crc": 1818053700,
+                "written": 160,
+                "runs": 1,
+                "flags": 0,
+                "start_tick": 16869,
+                "end_tick": 16869,
+                "budget_ticks": 80,
+                "opcode": 421920769,
+                "arg_size": 16,
+                "output_size": 16,
+                "return_value": 0,
+                "flag_names": [],
+                "elapsed_ticks": 0,
+                "tick_units": "raw uncalibrated device ticks",
+                "host_elapsed_seconds": 0.04834059998393059,
+                "host_elapsed_includes_usb_and_polling": true,
+                "execution_returned": true,
+                "output_sha256": "908e2b6adb5236f2b6523daa12164acfaf14caf5cf7dc371e5ca7ba8bd88886a"
+              },
+              "output_words": [
+                1,
+                4102417435,
+                421920769,
+                16869
+              ]
+            },
+            {
+              "execution": {
+                "state": 5,
+                "image_size": 160,
+                "memory_size": 176,
+                "entry_offset": 0,
+                "upload_crc": 1818053700,
+                "written": 160,
+                "runs": 2,
+                "flags": 0,
+                "start_tick": 16870,
+                "end_tick": 16870,
+                "budget_ticks": 80,
+                "opcode": 421920770,
+                "arg_size": 16,
+                "output_size": 16,
+                "return_value": 0,
+                "flag_names": [],
+                "elapsed_ticks": 0,
+                "tick_units": "raw uncalibrated device ticks",
+                "host_elapsed_seconds": 0.024190399795770645,
+                "host_elapsed_includes_usb_and_polling": true,
+                "execution_returned": true,
+                "output_sha256": "4c5d8dccca5049f171a58f9a105b872c595c8234fb5ed1af0ba9bc1cf65b748a"
+              },
+              "output_words": [
+                2,
+                4102417435,
+                421920770,
+                16870
+              ]
+            }
+          ]
+        },
+        {
+          "module": {
+            "abi": 1,
+            "base": 2186782560,
+            "image_capacity": 65536,
+            "image_size": 160,
+            "memory_size": 176,
+            "entry_offset": 0,
+            "crc32": 2802886637,
+            "sha256": "8c677aa591bbc586940c86adb9e536afbf60e94affd2f594b237b4cb9ef9d814",
+            "ELF_sha256": "23f8600aa47f3d8599aefc1cb9bbcab97b5cc4954b34e5aefe47a72740a799bd",
+            "source": "build\\h1-debug-deploy-hardware-20261017\\acceptance\\compute\\variant-1\\compute.c",
+            "source_sha256": "1726cad476b6e3f49e8c81846c71fa0e66656bab11cc20a2c325b829a7714e6c",
+            "ABI_sha256": "7b9d1ea308fba1bdcf95525979362fdeea5e3cdcdf7856ba692335f0fe408b64",
+            "binary": "build\\h1-debug-deploy-hardware-20261017\\acceptance\\compute\\variant-1\\module.bin",
+            "hardware_verified": false,
+            "sandbox": false,
+            "forced_preemption": false
+          },
+          "upload": {
+            "abi": 1,
+            "base": 2186782560,
+            "image_capacity": 65536,
+            "scratch_capacity": 16384,
+            "stack_capacity": 32768,
+            "output_capacity": 4096,
+            "state": 2,
+            "image_size": 160,
+            "memory_size": 176,
+            "entry_offset": 0,
+            "upload_crc": 2802886637,
+            "written": 160,
+            "runs": 0,
+            "flags": 0,
+            "forced_preemption": 0,
+            "api_size": 28
+          },
+          "runs": [
+            {
+              "execution": {
+                "state": 5,
+                "image_size": 160,
+                "memory_size": 176,
+                "entry_offset": 0,
+                "upload_crc": 2802886637,
+                "written": 160,
+                "runs": 1,
+                "flags": 0,
+                "start_tick": 16877,
+                "end_tick": 16877,
+                "budget_ticks": 80,
+                "opcode": 421920769,
+                "arg_size": 16,
+                "output_size": 16,
+                "return_value": 0,
+                "flag_names": [],
+                "elapsed_ticks": 0,
+                "tick_units": "raw uncalibrated device ticks",
+                "host_elapsed_seconds": 0.02362229977734387,
+                "host_elapsed_includes_usb_and_polling": true,
+                "execution_returned": true,
+                "output_sha256": "19d737d7838e5ca5a164d07b3fde6ea9e79ac62267c9c42d5828cd0d6dbd7048"
+              },
+              "output_words": [
+                1,
+                2015611811,
+                421920769,
+                16877
+              ]
+            },
+            {
+              "execution": {
+                "state": 5,
+                "image_size": 160,
+                "memory_size": 176,
+                "entry_offset": 0,
+                "upload_crc": 2802886637,
+                "written": 160,
+                "runs": 2,
+                "flags": 0,
+                "start_tick": 16878,
+                "end_tick": 16878,
+                "budget_ticks": 80,
+                "opcode": 421920770,
+                "arg_size": 16,
+                "output_size": 16,
+                "return_value": 0,
+                "flag_names": [],
+                "elapsed_ticks": 0,
+                "tick_units": "raw uncalibrated device ticks",
+                "host_elapsed_seconds": 0.024235599907115102,
+                "host_elapsed_includes_usb_and_polling": true,
+                "execution_returned": true,
+                "output_sha256": "6539540d38b704ec0ce0650ef85bfd76410c4e452abe15d6a96b57f424da0517"
+              },
+              "output_words": [
+                2,
+                2015611811,
+                421920770,
+                16878
+              ]
+            }
+          ]
+        }
+      ],
+      "exact_compute_verified": true,
+      "bss_persistence_verified": true,
+      "code_replacement_verified": true
+    },
+    "owned_memory_bytes": 512,
+    "write_readback_verified": true,
+    "native_visibility_verified": true,
+    "memory_restored_and_released": true,
+    "touch_opened_stock_time": true,
+    "escape_returned_to_desktop": true,
+    "resident_base_unchanged": true,
+    "screens_are_original_480x272": true,
+    "time_screen_transfer": {
+      "codec": "rle",
+      "decoded_bytes": 522240,
+      "encoded_bytes": 424214,
+      "requests": 859,
+      "protocol_bytes_sent": 24052,
+      "protocol_bytes_received": 451702,
+      "elapsed_seconds": 15.905999999959022,
+      "decoded_bytes_per_second": 32832.89324791559,
+      "progress_callback": false,
+      "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+    }
+  },
+  "serial_reopen": {
+    "rounds": 10,
+    "passed": true,
+    "abandoned_list_cancelled": true,
+    "partial_upload_aborted_and_temporary_removed": true,
+    "usb_reset_count_unchanged": true
+  },
+  "closing": {
+    "remote_desktop_run_self": true,
+    "job_id": 11,
+    "launch_acknowledged": true,
+    "cdc_disappeared": true,
+    "success_notice_and_menu_confirmed_by_user": "已关闭并重新连接",
+    "physical_reconnect_only_after_tests_for_disk_recovery": true,
+    "disk_recovery": {
+      "user_confirmation": "已关闭并重新连接",
+      "user_confirmed_success_notice_and_return": true,
+      "user_performed_physical_reconnect": true,
+      "devices": [
+        {
+          "Name": "USB 大容量存储设备",
+          "DeviceID": "USB\\VID_07C4&PID_A4A5\\A00A00A00A00",
+          "Status": "OK"
+        }
+      ],
+      "disks": [
+        {
+          "Model": "BBKUSB BBK-OS  -NAND USB Device",
+          "PNPDeviceID": "USBSTOR\\DISK&VEN_BBKUSB&PROD_BBK-OS__-NAND&REV_0100\\A&0",
+          "DeviceID": "\\\\.\\PHYSICALDRIVE3",
+          "Size": 1019934720
+        },
+        {
+          "Model": "BBKUSB BBK-OS  -SD USB Device",
+          "PNPDeviceID": "USBSTOR\\DISK&VEN_BBKUSB&PROD_BBK-OS__-SD&REV_0100\\A&1",
+          "DeviceID": "\\\\.\\PHYSICALDRIVE4",
+          "Size": 3898782720
+        }
+      ],
+      "volumes": [
+        {
+          "DeviceID": "F:",
+          "VolumeName": "@ibox H1",
+          "Size": 1023918080,
+          "FreeSpace": 274661376
+        },
+        {
+          "DeviceID": "G:",
+          "VolumeName": "",
+          "Size": 3896508416,
+          "FreeSpace": 3855810560
+        }
+      ],
+      "installed_path": "F:\\应用\\程序\\H1Debug.bda",
+      "installed_bda_sha256": "4214dbc11266c59359dac38d3ad6386c3d727e0f534a6520e952c5872cbd8b3d",
+      "hash_matches": true
+    }
+  },
+  "last_running_status": {
+    "version": 1,
+    "state": 1,
+    "usb_configured": 1,
+    "usb_fault": 0,
+    "usb_resets": 2,
+    "commands": 5311,
+    "bad_frames": 0,
+    "tick": 33704,
+    "poll_count": 1692330,
+    "last_poll_tick": 33704,
+    "resident_base": 2186122624,
+    "resident_size": 725472,
+    "keys_low": 0,
+    "keys_high": 0,
+    "exec_state": 5,
+    "last_error": 0
+  },
+  "screenshots": {
+    "desktop-v1": {
+      "path": "docs/evidence/h1-debug-deploy-desktop-v1.png",
+      "sha256": "237750a5a4943921d85f8afda46cee4ec1fb8316fac9d5dbb8b01d60804dbcc3",
+      "bytes": 68916
+    },
+    "desktop-v2": {
+      "path": "docs/evidence/h1-debug-deploy-desktop-v2.png",
+      "sha256": "cf86c36417b283324e2d8010a2ba8b5ba16b9ec4d61d418173ecf8ecde542f82",
+      "bytes": 68922
+    },
+    "desktop-after-delete": {
+      "path": "docs/evidence/h1-debug-deploy-desktop-after-delete.png",
+      "sha256": "a112b0e1a1ccfa410107167ea5d12e24e1de6600cfab437f2fe86126b3e4087d",
+      "bytes": 69749
+    },
+    "running-v2": {
+      "path": "docs/evidence/h1-debug-deploy-running-v2.png",
+      "sha256": "b0f0bbe41cb1209c935ff296d0372e10a69504d8254ff8623229a2582ac4b568",
+      "bytes": 1169
+    },
+    "time": {
+      "path": "docs/evidence/h1-debug-deploy-time.png",
+      "sha256": "8add9d289de016b5140c49bb0642f1d367fde9929fc4aa1d67790d855864b9f8",
+      "bytes": 74458
+    },
+    "menu-returned": {
+      "path": "docs/evidence/h1-debug-deploy-menu-returned.png",
+      "sha256": "c3fccfd5dcd97e74e224b8e23e5841123cc909101691c9c6258332e01b3d908d",
+      "bytes": 69762
+    }
+  },
+  "evidence": [
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/acceptance/acceptance.json",
+      "sha256": "bd6e85eb9ec72625ca6eee09e9eef70b68e435546200e7b0faf5bb72df5bbda4",
+      "bytes": 43566
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/acceptance/memory-ownership.json",
+      "sha256": "ece3e3042388947bfa5c9b80e23db25004d535d1e39703842c4c824c5abcd9de",
+      "bytes": 2224
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/acceptance/settled-menu.json",
+      "sha256": "b7d3fffff66ca00c22c1b2a031b018c885f367f7f3865bb99bd041fb2067f909",
+      "bytes": 1385
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/visual/visual-verification.json",
+      "sha256": "80f1d78b5adf8d33a70a71c81e286604517e76aed76734d91be29ff063bb982b",
+      "bytes": 20713
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/reopen-verification.json",
+      "sha256": "ee02711a4dbb298281c97f22257e0d128f374161c48cc8669203c10e5ddca076",
+      "bytes": 13779
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/close/input.json",
+      "sha256": "80e2ccde75812256ddd06f78789182ef8011677421908564f173c269017bd4f9",
+      "bytes": 5565
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/close/close.json",
+      "sha256": "a00e570e1d56edcdba95c37a5731e8f61b147b033ce0e5da2ded339bbdd3c5b5",
+      "bytes": 2404
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/close/disk-recovery.json",
+      "sha256": "e59404c83912c4639a5048fee8454b36c6c9e3751ad3b0aa5d9152cc2c78c56a",
+      "bytes": 1218
+    }
+  ],
+  "wire_logs": [
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/acceptance/wire.jsonl",
+      "sha256": "1e7ffaf75c9c8bdee5159ff7e2ed4e732d41a6709ca52d2e95b1c476e388bd89",
+      "bytes": 2485719
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/close/close-wire-1792225759802614500.jsonl",
+      "sha256": "0c832b42385907fc5eb2c105cfd445be8da30f52099ea822af7e34c1cea47d42",
+      "bytes": 7149
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/close/input-wire-1792225718836572300.jsonl",
+      "sha256": "510adb11777ffdfc775a42fe137dde0ae70fdee4c8e3e072589659dc3e201816",
+      "bytes": 2067525
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/close/input-wire.jsonl",
+      "sha256": "24d730b083f2b1ba2e0d19b90004e149e2cdcff0bb428526e788277fd886b0f3",
+      "bytes": 3569
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-00.jsonl",
+      "sha256": "085802a5d1fbc1d5785c1dd96b71b018806d84531eb3c44b1c5562746dd02d80",
+      "bytes": 4676
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-01.jsonl",
+      "sha256": "32e1ed70751423be1c14721a2041766e16db9cd2445c890281681d17e164d291",
+      "bytes": 63092
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-02.jsonl",
+      "sha256": "0bafc56afca623f88ce2a00c6392e35d69586c418e0940c31c89fbab93253155",
+      "bytes": 4769
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-03.jsonl",
+      "sha256": "c98a7339625948f61c7ed74c836fbc09c58bb92a61b98d503161974716d57fe2",
+      "bytes": 4053
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-04.jsonl",
+      "sha256": "e2d8e8ab525cdfeb778b4c76ae7e8c51cf00f8b1bb4d317b91f22a065e283a06",
+      "bytes": 4053
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-05.jsonl",
+      "sha256": "6ad688928d6bde013ac09caef1ccb5e57741e8261098340f78a2863ce3fcd2d1",
+      "bytes": 4053
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-06.jsonl",
+      "sha256": "bd10bcb938a791580e11e2f8759eeb734877c4083a85e61fbf5928c6e4f1bafe",
+      "bytes": 4053
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-07.jsonl",
+      "sha256": "43ea2930e84554e741675cf417da77de424e36547580b1de10ea264059dcc507",
+      "bytes": 4053
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-08.jsonl",
+      "sha256": "d5e23bd0a239b3f44a63229d8d01d9f16884d37a4fd66018a7c77fa3ff86cdfc",
+      "bytes": 4053
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/reopen/wire-09.jsonl",
+      "sha256": "c03913275fdc166bf38bcf5769b3dae5efb28c1f400bace4b4725c98e0507cbc",
+      "bytes": 4053
+    },
+    {
+      "path": "build/h1-debug-deploy-hardware-20261017/visual/wire.jsonl",
+      "sha256": "24cbcccd64658e077a7473c0e807b1ac0142b1cba0c9fa1fe47d135585e75641",
+      "bytes": 2347399
+    }
+  ],
+  "limitations": [
+    "Shutdown notice is confirmed by the user; USB is already stopped so no screenshot was claimed.",
+    "Changing the debugger resident binary itself still requires reboot; normal BDA updates do not.",
+    "No claim of arbitrary code isolation, forced preemption, power-failure atomicity, long stress or other firmware support.",
+    "A preliminary input harness attempt failed before input due to a missing local evidence directory; rerun succeeded after creating it."
+  ],
+  "final_state": "Debugging closed; ordinary NAND and SD USB disks restored; test files and owned RAM cleaned.",
+  "publication_note": "Public copy: local paths normalized; raw build evidence and wire logs remain private and are not distributed. Recorded source/log hashes describe the original acceptance artifacts.",
+  "original_report_sha256": "4829c5cf6a7fa641fb63d3cae2b82cc157ac6b745549f7f8cf752166fd6cc156"
+}

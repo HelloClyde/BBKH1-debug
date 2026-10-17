@@ -1,0 +1,99 @@
+name: Build and release H1Debug
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Check release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if ($env:RELEASE_TAG -ne "v$((Get-Content VERSION -Raw).Trim())") { throw 'Tag and VERSION differ' }
+      - name: Install pinned dependencies and toolchain
+        run: |
+          python -m pip install -r requirements.txt
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/install_toolchain.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Build tested BDA and bind exact acceptance
+        run: |
+          python tools/build_h1_debug.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/verify_build.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Public offline tests (no device or private firmware)
+        run: |
+          python tests/h1_debug_host.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tests/h1_debug_relocation.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tests/h1_debug_device.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tests/h1_debug_transport.py --existing-build
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tests/h1_debug_hardware.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/test_h1_debug_foreground_helper.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Package application, full source and skill
+        run: |
+          python scripts/package_release.py --commit "$env:GITHUB_SHA"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: H1Debug-release
+          path: dist/release/*
+          archive: true
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: H1Debug-release
+          path: dist/release
+          digest-mismatch: error
+      - name: Verify assets and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")" = "$RELEASE_COMMIT"
+          python scripts/package_release.py --verify --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT"
+          (cd dist/release && sha256sum -c SHA256SUMS.txt)
+          gh release create "$RELEASE_TAG" dist/release/* --verify-tag --title "H1Debug $RELEASE_TAG" --notes-file dist/release/RELEASE-NOTES.md

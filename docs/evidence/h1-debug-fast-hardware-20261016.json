@@ -1,0 +1,378 @@
+{
+  "date": "2026-10-16",
+  "completed_utc": "2026-10-16T14:30:46.964264+00:00",
+  "passed": true,
+  "physical_hardware_tested": true,
+  "device": "H1/Y100 V1.41",
+  "bda_sha256": "90e6c2f34873ac5a218ab520e17a44b205a52d2db03cbc5e958e40074bb169a3",
+  "bda_bytes": 70236,
+  "resident_image_id": "7143fbe9",
+  "resident_base": "0x824bcc00",
+  "resident_bytes": 702272,
+  "installation": {
+    "path": "F:\\应用\\程序\\H1Debug.bda",
+    "sha256": "90E6C2F34873AC5A218AB520E17A44B205A52D2DB03CBC5E958E40074BB169A3",
+    "previous_backup": "build\\h1-debug\\device-before-20261016-221726-8688.bda",
+    "hardware_verified": false
+  },
+  "throughput": {
+    "width": 480,
+    "height": 272,
+    "format": "BGRX8888",
+    "decoded_bytes": 522240,
+    "lossless_including_X_bytes": true,
+    "two_same_token_raw_rle_comparisons": [
+      {
+        "snapshot": {
+          "token": 2,
+          "width": 480,
+          "height": 272,
+          "stride": 1920,
+          "format": 2,
+          "total": 522240,
+          "source": 2710577152,
+          "tick": 4082
+        },
+        "same_snapshot": true,
+        "byte_identical": true,
+        "raw_sha256": "d17fdf9b1255fb48f02d5416c2865ab3d5e5cb057dac711dddf11dac8bae1046",
+        "rle_decoded_sha256": "d17fdf9b1255fb48f02d5416c2865ab3d5e5cb057dac711dddf11dac8bae1046",
+        "raw": {
+          "codec": "raw",
+          "decoded_bytes": 522240,
+          "encoded_bytes": 522240,
+          "requests": 1045,
+          "protocol_bytes_sent": 29260,
+          "protocol_bytes_received": 551500,
+          "elapsed_seconds": 18.45299999997951,
+          "decoded_bytes_per_second": 28301.089253811297,
+          "progress_callback": false,
+          "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+        },
+        "rle": {
+          "codec": "rle",
+          "decoded_bytes": 522240,
+          "encoded_bytes": 203094,
+          "requests": 412,
+          "protocol_bytes_sent": 11536,
+          "protocol_bytes_received": 216278,
+          "elapsed_seconds": 7.0,
+          "decoded_bytes_per_second": 74605.71428571429,
+          "progress_callback": false,
+          "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+        },
+        "transfer_speedup": 2.63614285713993,
+        "elapsed_seconds": 25.5
+      },
+      {
+        "snapshot": {
+          "token": 6,
+          "width": 480,
+          "height": 272,
+          "stride": 1920,
+          "format": 2,
+          "total": 522240,
+          "source": 2710577152,
+          "tick": 14894
+        },
+        "same_snapshot": true,
+        "byte_identical": true,
+        "raw_sha256": "71c4155ec27c4f8fb6b16a7dab1e31debf068478b0b9e5323230dd6fd476edc9",
+        "rle_decoded_sha256": "71c4155ec27c4f8fb6b16a7dab1e31debf068478b0b9e5323230dd6fd476edc9",
+        "raw": {
+          "codec": "raw",
+          "decoded_bytes": 522240,
+          "encoded_bytes": 522240,
+          "requests": 1045,
+          "protocol_bytes_sent": 29260,
+          "protocol_bytes_received": 551500,
+          "elapsed_seconds": 17.703999999910593,
+          "decoded_bytes_per_second": 29498.418436660493,
+          "progress_callback": false,
+          "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+        },
+        "rle": {
+          "codec": "rle",
+          "decoded_bytes": 522240,
+          "encoded_bytes": 203790,
+          "requests": 413,
+          "protocol_bytes_sent": 11564,
+          "protocol_bytes_received": 217006,
+          "elapsed_seconds": 7.296000000089407,
+          "decoded_bytes_per_second": 71578.94736754391,
+          "progress_callback": false,
+          "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+        },
+        "transfer_speedup": 2.426535087677309,
+        "elapsed_seconds": 25.07799999997951
+      }
+    ],
+    "raw_download_seconds": [
+      18.45299999997951,
+      17.703999999910593
+    ],
+    "rle_menu_download_seconds": [
+      7.0,
+      7.296000000089407
+    ],
+    "raw_mean_seconds": 18.078499999945052,
+    "rle_menu_mean_seconds": 7.1480000000447035,
+    "time_bda_rle": {
+      "metadata": {
+        "token": 7,
+        "width": 480,
+        "height": 272,
+        "stride": 1920,
+        "format": 2,
+        "total": 522240,
+        "source": 2710577152,
+        "tick": 15969,
+        "codec": "rle",
+        "transfer": {
+          "codec": "rle",
+          "decoded_bytes": 522240,
+          "encoded_bytes": 424158,
+          "requests": 859,
+          "protocol_bytes_sent": 24052,
+          "protocol_bytes_received": 451646,
+          "elapsed_seconds": 14.906999999890104,
+          "decoded_bytes_per_second": 35033.20587669216,
+          "progress_callback": false,
+          "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+        },
+        "capture_elapsed_seconds": 14.969000000040978
+      },
+      "raw_sha256": "1293939c647cc9bb94e3b057fcf60479cfedc1becbed57de80a31306517a10c4",
+      "image": "build\\h1-debug-fast-hardware-20261016\\06-time-background\\05-screen\\screen.png"
+    },
+    "old_raw_reference": {
+      "seconds": 161.511413,
+      "bda_sha256": "3d5648745bdf67a73c4401a88ddf961ef8f8165aea04040a0ffbec2fb8f07d0c",
+      "same_pixel_buffer_as_new_measurements": false,
+      "same_resolution_and_byte_count": true
+    },
+    "approx_raw_speedup_vs_old_reference": 8.933894570926288,
+    "approx_menu_rle_speedup_vs_old_reference": 22.59532918284694,
+    "additional_complete_screen_observations": [
+      {
+        "request": {
+          "command": "screen",
+          "file": "02-initial-menu.png"
+        },
+        "metadata": {
+          "token": 1,
+          "width": 480,
+          "height": 272,
+          "stride": 1920,
+          "format": 2,
+          "total": 522240,
+          "source": 2710577152,
+          "tick": 2207,
+          "codec": "rle",
+          "transfer": {
+            "codec": "rle",
+            "decoded_bytes": 522240,
+            "encoded_bytes": 203120,
+            "requests": 412,
+            "protocol_bytes_sent": 11536,
+            "protocol_bytes_received": 216304,
+            "elapsed_seconds": 6.859999999869615,
+            "decoded_bytes_per_second": 76128.27988482887,
+            "progress_callback": false,
+            "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+          },
+          "capture_elapsed_seconds": 6.937000000150874,
+          "output": "build\\h1-debug-fast-hardware-20261016\\02-initial-menu.png",
+          "snapshot_sha256": "1e785889a0628eb8b17f9fc424fc42ced4acb097d9c1fea05c175a3994678465",
+          "png_sha256": "863b4a5ab7c4154ee7b431587bfdb05270d9ba46f1127a56774c7844dbf4fe26"
+        }
+      },
+      {
+        "request": {
+          "command": "screen",
+          "file": "07-final-menu.png"
+        },
+        "metadata": {
+          "token": 8,
+          "width": 480,
+          "height": 272,
+          "stride": 1920,
+          "format": 2,
+          "total": 522240,
+          "source": 2710577152,
+          "tick": 19201,
+          "codec": "rle",
+          "transfer": {
+            "codec": "rle",
+            "decoded_bytes": 522240,
+            "encoded_bytes": 423887,
+            "requests": 858,
+            "protocol_bytes_sent": 24024,
+            "protocol_bytes_received": 451343,
+            "elapsed_seconds": 14.766000000061467,
+            "decoded_bytes_per_second": 35367.736692254235,
+            "progress_callback": false,
+            "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+          },
+          "capture_elapsed_seconds": 14.828999999910593,
+          "output": "build\\h1-debug-fast-hardware-20261016\\07-final-menu.png",
+          "snapshot_sha256": "feba870f73918b6cbbb73360539e17bbece81dd3f05d0e638c9dfab8772efcaa",
+          "png_sha256": "f27bc257793847ffbe2e04a68be88809432091e5c1ad6c4cd6f0e8fe9013fa8a"
+        }
+      },
+      {
+        "request": {
+          "command": "screen",
+          "file": "08-menu-before-stop.png"
+        },
+        "metadata": {
+          "token": 9,
+          "width": 480,
+          "height": 272,
+          "stride": 1920,
+          "format": 2,
+          "total": 522240,
+          "source": 2710577152,
+          "tick": 21020,
+          "codec": "rle",
+          "transfer": {
+            "codec": "rle",
+            "decoded_bytes": 522240,
+            "encoded_bytes": 203787,
+            "requests": 413,
+            "protocol_bytes_sent": 11564,
+            "protocol_bytes_received": 217003,
+            "elapsed_seconds": 7.780999999959022,
+            "decoded_bytes_per_second": 67117.33710355357,
+            "progress_callback": false,
+            "scope": "SCREEN_READ RPCs; protocol framing included, USB packet overhead excluded"
+          },
+          "capture_elapsed_seconds": 7.844000000040978,
+          "output": "build\\h1-debug-fast-hardware-20261016\\08-menu-before-stop.png",
+          "snapshot_sha256": "de132862dae4aa71e8d64db99cfa4f0f30c556e0522be6b6df99ce1790093ef8",
+          "png_sha256": "ab7cbe3dfcade2ab71c9408028d7a1e2f063094266dbb0320a030e1833791b68"
+        }
+      }
+    ],
+    "timing_scope": "Download RPCs include protocol handling and wire recording; exclude capture/release/PNG unless separately labeled. Compression depends on the scene."
+  },
+  "checks": {
+    "foreground_during_raw_transfer": {
+      "passed": true,
+      "tap_at_fraction": 0.25,
+      "gui_priority": 10,
+      "gui_switches": 755,
+      "same_snapshot_preserved_across_bda_switch": true,
+      "escape_returned_to_menu_visually_verified": true,
+      "report": "docs/evidence/h1-debug-fast-foreground.json"
+    },
+    "background_in_time_bda": {
+      "passed": true,
+      "compute_variants": 2,
+      "runs_per_variant": 2,
+      "pc_reference_equal": true,
+      "BSS_persistence_and_code_replacement": true,
+      "owned_memory_bytes": 512,
+      "host_and_native_readback_equal": true,
+      "restored_and_freed": true,
+      "deterministic_benchmark_runs": 3,
+      "iterations_per_run": 200000,
+      "benchmark_tick_resolution_note": "All three short runs were below one raw tick; no zero-time performance claim",
+      "report": "build/h1-debug-fast-hardware-20261016/06-time-background/suite-progress.json"
+    },
+    "serial_reopen": {
+      "passed": true,
+      "cycles": 10,
+      "finite_touch_lease_survived_DTR": true,
+      "explicit_release_acknowledged": true,
+      "report": "build/h1-debug-fast-hardware-20261016/reopen-touch.json"
+    },
+    "reopen_to_stop": {
+      "passed": true,
+      "trigger": "PC virtual tap (41,135) opens H1Debug from visually verified menu",
+      "tap_release_acknowledged": true,
+      "CDC_disappeared": true,
+      "user_report": "已关闭并重新连接",
+      "success_prompt_and_return_to_menu": "User confirmed in response to the explicit combined check",
+      "stopped_UI_captured_over_USB": false
+    },
+    "stock_disk_restored": {
+      "checked_utc": "2026-10-16T14:29:06.8774491Z",
+      "user_report": "已关闭并重新连接",
+      "usb": [
+        {
+          "Name": "USB 大容量存储设备",
+          "PNPDeviceID": "USB\\VID_07C4&PID_A4A5\\A00A00A00A00",
+          "Status": "OK"
+        }
+      ],
+      "volumes": [
+        {
+          "DriveLetter": "F",
+          "FileSystemLabel": "@ibox H1",
+          "FileSystem": "FAT",
+          "HealthStatus": "Healthy",
+          "Size": 1023918080
+        },
+        {
+          "DriveLetter": "G",
+          "FileSystemLabel": "",
+          "FileSystem": "FAT32",
+          "HealthStatus": "Healthy",
+          "Size": 3896508416
+        }
+      ],
+      "device_bda_sha256": "90E6C2F34873AC5A218AB520E17A44B205A52D2DB03CBC5E958E40074BB169A3",
+      "expected_bda_sha256": "90E6C2F34873AC5A218AB520E17A44B205A52D2DB03CBC5E958E40074BB169A3",
+      "matching_bda": true,
+      "stock_disk_present": true,
+      "debug_usb_present": false
+    },
+    "final_running_transport_stats": {
+      "status": {
+        "version": 1,
+        "state": 1,
+        "usb_configured": 1,
+        "usb_fault": 0,
+        "usb_resets": 2,
+        "commands": 8402,
+        "bad_frames": 0,
+        "tick": 22526,
+        "poll_count": 2692789,
+        "last_poll_tick": 22526,
+        "resident_base": 2186005504,
+        "resident_size": 702272,
+        "keys_low": 0,
+        "keys_high": 0,
+        "exec_state": 5,
+        "last_error": 0
+      },
+      "counters": {
+        "service_calls": 22261,
+        "active_windows": 5795,
+        "window_polls_max": 736,
+        "frame_limit_exits": 5781,
+        "iteration_limit_exits": 0,
+        "tick_limit_exits": 0,
+        "idle_returns": 16454
+      }
+    }
+  },
+  "full_firmware_proofs": [
+    "docs/evidence/h1-debug-fast-native-lifecycle.json",
+    "docs/evidence/h1-debug-fast-native-virtual-touch.json",
+    "docs/evidence/h1-debug-fast-native-foreground-fairness.json"
+  ],
+  "offline_verification": "docs/evidence/h1-debug-fast-offline-verification.json",
+  "final_state": "Debugger stopped; ordinary H1 USB disk restored; installed file readback equals tested build. Resident allocation retained until reboot.",
+  "scope_limits": [
+    "Functional foreground progress and input response verified, not zero CPU overhead or an FPS-equivalence benchmark.",
+    "The two-frame budget bounds active polling; individual screenshot copies and noncooperative EXEC code are not forcibly preempted.",
+    "Full-firmware QEMU has no working USB host/FIFOs: its frozen-FRAME proof is not a hardware throughput test.",
+    "Physical stop/restart reuse was not repeated after final stop; exact-build full-firmware lifecycle verifies reuse.",
+    "No long-duration soak, arbitrary foreground games, other firmware revisions or faulting user code claimed."
+  ],
+  "raw_evidence_directory": "build/h1-debug-fast-hardware-20261016",
+  "publication_note": "Historical acceptance summary. Local paths normalized; original raw logs are not included.",
+  "original_report_sha256": "2122c83257af7f5a0c823ec8f8b3e54b3ca9254934c2f4020d7942772e81e39f"
+}

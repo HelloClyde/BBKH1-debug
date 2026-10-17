@@ -1,0 +1,10 @@
+/.tools/
+/build/
+/dist/
+__pycache__/
+*.pyc
+*.raw
+*.nand
+project.bin
+*.part
+/.venv/

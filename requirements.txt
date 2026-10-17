@@ -1,0 +1,4 @@
+Pillow==12.3.0
+pyserial==3.5
+pyelftools==0.33
+unicorn==2.1.4
