@@ -25,14 +25,45 @@ static const uint8_t config[]={
 static unsigned le16(const uint8_t *p){return p[0]|((unsigned)p[1]<<8);}
 int debug_usb_cable_connected(void){return !!((R32(0xb0010300)&PD6) || (R32(0xb0010100)&(1u<<18)));}
 unsigned debug_usb_frame(void){return R16(U+0x0c)&0x7ffu;}
-static void ownership_error(debug_usb *u,unsigned events)
+/* Outside debug_usb so open() can reset a session without losing its fault.
+ * INTRUSB/INTRTX/INTRRX are deliberately omitted: reads acknowledge events. */
+static uint32_t diagnostic_opens,diagnostic_faults,last_fault_valid,last_fault_open;
+static uint32_t diagnostic_reconnects;
+static uint32_t last_fault[DEBUG_USB_SNAPSHOT_WORDS];
+static uint32_t clock_cpccr,clock_cppcr,clock_tx_baseline,clock_armed;
+static uint32_t clock_stall_started,clock_stall_tick,reconnect_phase,reconnect_tick;
+static void diagnostic_snapshot(const debug_usb *u,uint32_t *v,unsigned events,unsigned reason)
 {
+    uint32_t cp0;__asm__ volatile("mfc0 %0,$12\n\tnop":"=r"(cp0));
+    v[0]=fw_tick();v[1]=reason;v[2]=events;
+    v[3]=R32(0xb0000000);v[4]=R32(0xb0000010);
+    v[5]=R32(0xb0000020);v[6]=R32(0xb0000024);v[7]=cp0;
+    v[8]=R32(0xb0001004);v[9]=R32(0xb0010320);
+    v[10]=R32(0xb0010300);v[11]=R32(0xb0010380);
+    v[12]=R8(U+1);v[13]=R16(U+6);v[14]=R16(U+8);v[15]=R8(U+0xb);
+    v[16]=debug_usb_frame();v[17]=R8(U);v[18]=R8(U+0xe);
+    v[19]=u->configured;v[20]=u->resets;v[21]=u->session_epoch;
+    v[22]=u->rx_packets;v[23]=u->tx_packets;
+}
+void debug_usb_diagnostics(const debug_usb *u,uint32_t out[DEBUG_USB_DIAG_WORDS])
+{
+    out[0]=2;out[1]=DEBUG_USB_DIAG_WORDS;out[2]=diagnostic_opens;
+    out[3]=diagnostic_faults;out[4]=last_fault_valid;out[5]=last_fault_open;
+    out[6]=DEBUG_USB_SNAPSHOT_WORDS;out[7]=diagnostic_reconnects;
+    diagnostic_snapshot(u,out+8,0,u->fault_reason);
+    for(unsigned i=0;i<DEBUG_USB_SNAPSHOT_WORDS;++i)out[32+i]=last_fault[i];
+}
+static void ownership_error(debug_usb *u,unsigned events,unsigned extra)
+{
+    if(u->ownership_fault)return;
     u->fault_txe=R16(U+6);u->fault_rxe=R16(U+8);u->fault_usbe=R8(U+0xb);
     u->fault_imr=R32(0xb0001004);u->fault_pdmask=R32(0xb0010320);
     u->fault_pin=R32(0xb0010300);u->fault_power=R8(U+1);u->fault_events=(uint8_t)events;
     u->fault_reason=(u->fault_txe?1:0)|(u->fault_rxe?2:0)|(u->fault_usbe?4:0)|
-        (!(u->fault_imr&USB_IRQ)?8:0)|(!(u->fault_pdmask&PD6)?16:0)|((u->fault_power&0x20)?32:0);
+        (!(u->fault_imr&USB_IRQ)?8:0)|(!(u->fault_pdmask&PD6)?16:0)|((u->fault_power&0x20)?32:0)|extra;
     u->ownership_fault=1;
+    diagnostic_snapshot(u,last_fault,events,u->fault_reason);
+    ++diagnostic_faults;last_fault_valid=1;last_fault_open=diagnostic_opens;
 }
 static void stall(debug_usb *u){R16(U+0x12)=0x60;u->control_phase=0;++u->stalls;}
 static void flush_in(void)
@@ -158,13 +189,15 @@ int debug_usb_open(debug_usb *u)
         u->maxp[i][0]=R16(U+0x10);u->maxp[i][1]=R16(U+0x14);
         u->csr[i][0]=R16(U+0x12);u->csr[i][1]=R16(U+0x16);
     }
-    u->owned=1;R8(U)=0;endpoints();R16(U+0x12)=0xc0;
+    u->owned=1;++diagnostic_opens;R8(U)=0;endpoints();R16(U+0x12)=0xc0;
+    clock_cpccr=R32(0xb0000000);clock_cppcr=R32(0xb0000010)&~0x400u;
+    clock_armed=clock_stall_started=reconnect_phase=0;clock_tx_baseline=0;
     u->line[0]=0;u->line[1]=0xc2;u->line[2]=1;u->line[6]=8;
     R8(U+1)=0x40;unlock(irq);return 0;
 }
 void debug_usb_poll(debug_usb *u)
 {
-    if(!u->owned)return;
+    if(!u->owned || u->ownership_fault)return;
     uint8_t events=R8(U+0xa);
     uint8_t power=R8(U+1);
     unsigned reset_rechecked=0;
@@ -175,7 +208,7 @@ check_reset:
          * masked. Refuse native clock/IRQ/cable service changes nonetheless. */
         if(R8(U+0xb) || !(R32(0xb0001004)&USB_IRQ) ||
            !(R32(0xb0010320)&PD6) || (power&0x20)){
-            ownership_error(u,events);return;
+            ownership_error(u,events,0);return;
         }
         if(!u->reset_pending){
             u->reset_pending=1;u->configured=0;u->control_phase=0;++u->resets;
@@ -186,7 +219,7 @@ check_reset:
          * SE0 the endpoint IRQ enables have already returned to defaults.
          * Keep ownership masks, pause service and finish after reset ends. */
         if(power&8){
-            if(fw_tick()-u->reset_tick>200u){ownership_error(u,events);u->fault_reason|=64;return;}
+            if(fw_tick()-u->reset_tick>200u){ownership_error(u,events,64u);return;}
             (void)R16(U+2);(void)R16(U+4);return;
         }
         u->reset_pending=0;R8(U)=0;endpoints();
@@ -203,11 +236,27 @@ check_reset:
             reset_rechecked=1;events|=R8(U+0xa);power=R8(U+1);
             if((events&4) || (power&8) || u->reset_pending)goto check_reset;
         }
-        ownership_error(u,events);return;
+        ownership_error(u,events,0);return;
     }
     if(!(R32(0xb0001004)&USB_IRQ) || !(R32(0xb0010320)&PD6) ||
        (R8(U+1)&0x20) || (R32(0xb0000020)&(1u<<11)) || !(R32(0xb0000024)&0x40u)){
-        ownership_error(u,events);u->fault_reason|=128u;return;
+        ownership_error(u,events,128u);return;
+    }
+    /* A live PLL/bus-divider transition can leave bulk IN stuck while EP0,
+     * bulk OUT and SOF still run. Sample only; do not modify CPU clocks. */
+    uint32_t cpccr=R32(0xb0000000),cppcr=R32(0xb0000010)&~0x400u;
+    if(cpccr!=clock_cpccr || cppcr!=clock_cppcr){
+        clock_cpccr=cpccr;clock_cppcr=cppcr;clock_armed=1;
+        clock_tx_baseline=u->tx_packets;clock_stall_started=0;
+    }
+    if(reconnect_phase){
+        /* SOFTCONN only: ownership, PHY, task, foreground and EXEC output
+         * remain intact. Windows gets fresh endpoints/data toggles after
+         * enumeration. The physical cable stays connected. */
+        if(fw_tick()-reconnect_tick>=12u){
+            R8(U)=0;endpoints();R8(U+1)=0x40;reconnect_phase=0;
+        }
+        return;
     }
     (void)R16(U+2);(void)R16(U+4);
     R8(U+0xe)=0;
@@ -233,11 +282,31 @@ int debug_usb_read(debug_usb *u,uint8_t *data,unsigned capacity)
 int debug_usb_write(debug_usb *u,const uint8_t *data,unsigned length)
 {
     if(!u->configured || length>64)return 0;R8(U+0xe)=1;
-    if(R16(U+0x12)&3)return 0;
+    /* PM 21.4.3.15 / 21.9.1.2: InPktRdy clears when another FIFO
+     * bank is writable, even while FIFONotEmpty remains set. The latter
+     * means "not drained", not "cannot queue". Preserve that WZC bit
+     * when committing the next packet; do not flush or reset DATA toggles. */
+    if(R16(U+0x12)&0x11u)return 0;
     for(unsigned i=0;i<length;++i)R8(U+0x24)=data[i];
-    R16(U+0x12)=0x2001;++u->tx_packets;return 1;
+    R16(U+0x12)=0x2003;++u->tx_packets;return 1;
 }
 int debug_usb_tx_idle(debug_usb *u){(void)u;R8(U+0xe)=1;return !(R16(U+0x12)&3);}
+int debug_usb_clock_recover(debug_usb *u,int may_reconnect)
+{
+    if(!u->owned || !u->configured || u->ownership_fault || !clock_armed || reconnect_phase)return 0;
+    R8(U+0xe)=1;
+    if(!(R16(U+0x12)&3u)){
+        clock_stall_started=0;
+        /* Empty before the first new packet does not prove link recovery. */
+        if(u->tx_packets!=clock_tx_baseline)clock_armed=0;
+        return 0;
+    }
+    if(!clock_stall_started){clock_stall_started=1;clock_stall_tick=fw_tick();return 0;}
+    if(!may_reconnect || fw_tick()-clock_stall_tick<80u)return 0;
+    R8(U+1)=0;u->configured=0;u->control_phase=0;++u->session_epoch;
+    clock_armed=clock_stall_started=0;reconnect_phase=1;reconnect_tick=fw_tick();
+    ++diagnostic_reconnects;return 1;
+}
 void debug_usb_close(debug_usb *u)
 {
     if(!u->owned)return;R8(U+1)=0;

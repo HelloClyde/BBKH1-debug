@@ -1,0 +1,208 @@
+{
+  "date": "2026-10-19",
+  "bda_sha256": "bf2934e44ae4d3bdc191acb10f61ec7f3c8d5b866bb4d4f2042dd6479dc4d412",
+  "image_id": "71a0983b",
+  "firmware": "H1/Y100 V1.41",
+  "hardware_verified": true,
+  "full_firmware_verified": false,
+  "scope": "Targeted clock/USB software recovery, foreground coexistence, input/screenshots, owned RAM/EXEC and DTR; physical STOP/disk restore not repeated for this SHA",
+  "checks": {
+    "host": 103,
+    "compiled_mips_usb": 33,
+    "transport": 13,
+    "independent_GNU_links": 2
+  },
+  "clock_backend_sha256": "49a32938301185b27c33277904da86b6f4af361a2edac864a4338882028b5fcc",
+  "automatic_execution_retries": 0,
+  "physical_USB_replugs_during_current_build_clock_trials": 0,
+  "trials": [
+    {
+      "foreground": "desktop",
+      "EXEC_RUN_wire_count": 1,
+      "exec_result": {
+        "state": 5,
+        "image_size": 3904,
+        "memory_size": 36944,
+        "entry_offset": 0,
+        "upload_crc": 3931594566,
+        "written": 3904,
+        "runs": 1,
+        "flags": 0,
+        "start_tick": 2228,
+        "end_tick": 2261,
+        "budget_ticks": 400,
+        "opcode": 384,
+        "arg_size": 0,
+        "output_size": 3616,
+        "return_value": 0,
+        "flag_names": [],
+        "elapsed_ticks": 33,
+        "tick_units": "raw uncalibrated device ticks"
+      },
+      "RAM_rounds": 32,
+      "RAM_faults": 0,
+      "CPU_checksums": [
+        868636661,
+        868636661
+      ],
+      "original_CPCCR_CPPCR": [
+        1080435232,
+        452986144
+      ],
+      "running_CPCCR_CPPCR": [
+        1080505136,
+        520095008
+      ],
+      "restored_CPCCR_CPPCR": [
+        1080435232,
+        452986144
+      ],
+      "service_opens_before_after": [
+        1,
+        1
+      ],
+      "service_stops_before_after": [
+        0,
+        0
+      ],
+      "clock_reconnects_before_after": [
+        0,
+        1
+      ],
+      "ownership_fault_count": 0,
+      "evidence": "build/h1-debug-usb-diag-20261019/recovery-r1/clock-384/result.json"
+    },
+    {
+      "foreground": "animated normal BDA",
+      "EXEC_RUN_wire_count": 1,
+      "exec_result": {
+        "state": 5,
+        "image_size": 3904,
+        "memory_size": 36944,
+        "entry_offset": 0,
+        "upload_crc": 3931594566,
+        "written": 3904,
+        "runs": 1,
+        "flags": 0,
+        "start_tick": 5938,
+        "end_tick": 5971,
+        "budget_ticks": 400,
+        "opcode": 384,
+        "arg_size": 0,
+        "output_size": 3616,
+        "return_value": 0,
+        "flag_names": [],
+        "elapsed_ticks": 33,
+        "tick_units": "raw uncalibrated device ticks"
+      },
+      "RAM_rounds": 32,
+      "RAM_faults": 0,
+      "CPU_checksums": [
+        868636661,
+        868636661
+      ],
+      "original_CPCCR_CPPCR": [
+        1080435232,
+        452986144
+      ],
+      "running_CPCCR_CPPCR": [
+        1080505136,
+        520095008
+      ],
+      "restored_CPCCR_CPPCR": [
+        1080435232,
+        452986144
+      ],
+      "service_opens_before_after": [
+        1,
+        1
+      ],
+      "service_stops_before_after": [
+        0,
+        0
+      ],
+      "clock_reconnects_before_after": [
+        1,
+        2
+      ],
+      "ownership_fault_count": 0,
+      "evidence": "build/h1-debug-usb-diag-20261019/recovery-r1/foreground-clock-384/result.json"
+    }
+  ],
+  "foreground": {
+    "fixture_sha256": "d1a4308b674d16a470c5f991f69bb9fa46af58c266ad6f8b45b651e3c05f1895",
+    "counter_values": [
+      1,
+      190,
+      198
+    ],
+    "GUI_task_switches": [
+      7486,
+      7564
+    ],
+    "owned_memory_bytes": 512,
+    "memory_read_write_native_visibility": true,
+    "memory_restored_and_freed": true,
+    "compute_variants": 2,
+    "runs_per_variant": 2,
+    "BSS_and_code_replacement": true,
+    "ten_DTR_reopens": true,
+    "DTR_usb_reset_count_unchanged": true,
+    "test_BDA_removed": true,
+    "ESC_return_to_desktop": true,
+    "screenshots_dimensions": [
+      480,
+      272
+    ]
+  },
+  "finish": {
+    "CPU_MHz": 336,
+    "debugger_running": true,
+    "foreground": "native desktop",
+    "pending_test_allocations": false,
+    "pending_test_files": false
+  },
+  "evidence_sha256": {
+    "build/h1-debug-usb-diag-20261019/recovery-r1/clock-384/result.json": "b82821da345a19ef4ef7c7bc4fc3678799b3754465ec369166dfdf1030eae8e7",
+    "build/h1-debug-usb-diag-20261019/recovery-r1/foreground-clock-384/result.json": "b782286c968080bac62359e616f58b7ddda637a6f3ade95db0801e5a28c054d7",
+    "build/h1-debug-usb-diag-20261019/recovery-r1/foreground/verification.json": "68717c4cc17945cfa3f51f9e9907fd1843e925d04329d235a64dda61e148cf9a"
+  },
+  "source_sha256": {
+    "experiments/h1-usb-debug/protocol.c": "f971c675ff72d4bafde0988a9f5e468747d7fcee8e468d214acf808b130dd3a4",
+    "experiments/h1-usb-debug/protocol.h": "282e2e02ad3a1e20ac361eaab045d0befd37539142e1651b61b29c44ba6c5da6",
+    "experiments/h1-usb-runner/module_abi.h": "7b9d1ea308fba1bdcf95525979362fdeea5e3cdcdf7856ba692335f0fe408b64",
+    "experiments/h1-usb-runner/native_exec.c": "3de2326496503e8bfc28f10acb5b10900efe7b52a038e7bc0783248f6d1f7292",
+    "experiments/h1-usb-runner/native_exec.h": "7631639bb92fcb6783890514279d2083e4ac2c264e749c3ed59813666e7924de",
+    "experiments/h1-usb-runner/trampoline.S": "b367202da1ea380d7bc70d1e9d3ac80b8d24910978201d58737fc37959ee6aa4",
+    "h1-debug/assets/icon.png": "45b3a87945979a57e5ad14e31d449cd7014d1ef632cd1b1a8c09ff208e93eaa6",
+    "h1-debug/debug.h": "5b0fe3afdd00e4acfbf393014139315327120dfadbc6fcecffdab1ce663e4f2d",
+    "h1-debug/files.c": "283f20284585ac24988de2ca56d023e727dc290fda8a2d51a9c7ad001e254012",
+    "h1-debug/files.h": "7c184d7d92c45cf61598d93ec22fb1778b6111eee0aee8ab27a89958df0f87c9",
+    "h1-debug/firmware.c": "8da878f02362386d14b86b6f290d0ac639c88e75fdcc44198429edaa55a9403f",
+    "h1-debug/firmware.h": "c37c3b9718ae8f7c42627a13f8e46804999aa3128d7cb2e3266f75913ea19f69",
+    "h1-debug/io.c": "c041dde09c7366b4f69965a74f875d673b5cd3158619cbe0cd9d24821b8d7c1a",
+    "h1-debug/io.h": "8d2726c1f373f19af98345c78521e7e278353d261ae9bafa938de0f37c0f9809",
+    "h1-debug/launcher.c": "8a5c1adc91c3bba9c2488def77239f8ed93263ae6629c55b31a96f778ca4db55",
+    "h1-debug/resident.c": "8beece119d0577a95e6503e77773a28d94aae70582d6010928b33fdcc88174bb",
+    "h1-debug/resident.ld": "c922058a715898f81c196089b0e331fed39e627ff54c98add897a9589cbe2931",
+    "h1-debug/screen_codec.c": "00b07b8a1c646ec89442b6975b0d7f026670a049ef7c6f85745b9bec49008161",
+    "h1-debug/screen_codec.h": "bf27624655f6f6ab0b900d6e4fadeb0d9ac59a124727bd3514a7b4264e1b2f11",
+    "h1-debug/shell.c": "22a23ce7b3bf19c0500c513ce5e8435a86fcd2de04772a8a87642c7b8782af1f",
+    "h1-debug/shell.h": "bdfc9476df84b9b569f37b0964eca0a0a8dd41758c697190195769973ece95bc",
+    "h1-debug/usb.c": "c36fefddd2ed0d969bfe01ac30020d8cb223922c2665833a95c699bb87bf19a9",
+    "h1-debug/usb.h": "ea1c4dde79976c38ea2fdfa97ddc78ee76b133ceed41988c169d4515035a87d4",
+    "src/runtime/entry.S": "9a107a1fe8b14b0fe08c9892f21788772f95e64ff91eb21f967beb666900636b",
+    "src/runtime/h1.ld": "84d5f5efcaa35ac423e22b31fa443b58d9ff65b316bafb2b8e45b38ee651e38d",
+    "src/runtime/startup.c": "922cdd40e915c8dbcb2edd7ba2aeba78fe67dde94765181805c22e25add2d68d",
+    "tools/build_h1_debug.py": "2e77cdf41348bbadae89dcbd64d9635437a42eb084430a789744a045404659e8",
+    "vendor/h1-sdk/sdk/include/h1_dialogs.h": "cb8af68fd9aba7fdeebfd63e37dfc644b56e3d473ee456e667515381c7eed0c5",
+    "vendor/h1-sdk/sdk/include/h1_filesystem.h": "939c31edfbf3461d3f8fe02073e8071317265f689445d26530e208b8811f33e2",
+    "vendor/h1-sdk/sdk/include/h1_graphics.h": "a14b9ad45611b675505d73bb023e33ac84d514a33f983d5d46a567301b3f4658",
+    "vendor/h1-sdk/sdk/include/h1_input.h": "0f3b1bb1c88cf09023bce74e9e078854902a5c17573a9acb256e757dc700f7c7",
+    "vendor/h1-sdk/sdk/include/h1_memory.h": "c0447b7e56ad8e20bee1be12df5254d87cc9ef6274a8570143f65c9b46a8664e",
+    "vendor/h1-sdk/sdk/include/h1_runtime.h": "d96b1502d3a7cefc397d9a19d977e55342d116a9ca3aea54d8bdfef302fcb97b",
+    "vendor/h1-sdk/sdk/include/h1_sdk.h": "3b31976112928af5bb5a4309db69883561a624e19441dd920d30f360147fc582",
+    "vendor/h1-sdk/sdk/include/h1_time.h": "20be366ac00d66451c1bba34ef1ee47e8377002c4354bf613cd88d3b75570a43",
+    "vendor/h1-sdk/sdk/include/h1_types.h": "cc65fa4bcf0137d0a7b61d293651a0a4d998d3b1a3370ccc8e036141e5574d1c"
+  }
+}

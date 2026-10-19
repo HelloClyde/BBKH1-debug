@@ -150,7 +150,7 @@ def main():
     if not validation['ok']:
         raise RuntimeError(validation)
     digest = hashlib.sha256(data).hexdigest()
-    report = dict(version='resident-debug-deploy-r1', image_id=f'{image_id:08x}', sha256=digest, size=len(data),
+    report = dict(version='resident-debug-usb-clock-recovery-r1', image_id=f'{image_id:08x}', sha256=digest, size=len(data),
                   resident_image_bytes=len(resident), resident_memory_bytes=memory_size, relocations=len(records),
                   sdk_commit=SDK_COMMIT, firmware='H1/Y100 V1.41', hardware_verified=False,
                   full_firmware_verified=False, forced_preemption=False, raw_tick_hz=None,

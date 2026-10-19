@@ -6,6 +6,10 @@
 支持按键与单点触摸、480×272原尺寸无损截图、RAM读写、原生测试模块执行、
 完整BDA上传/替换、桌面刷新与运行，以及文件和目录管理。普通BDA更新可全程保持USB连接。
 
+v1.0.2新增保留USB诊断和调频失步后的软件恢复。若变频使发送通道卡住，调试器会在安全时机
+短暂重新枚举USB；PC重开串口后可读取原结果，无需拔线或重新打开“H1调试”。
+它不会重发执行、写入或点击命令。详见 [调频与USB恢复](docs/usb-diagnostics.md)。
+
 ## 快速开始
 
 从 [Releases](https://github.com/HelloClyde/BBKH1-debug/releases) 下载
@@ -23,6 +27,7 @@ python tools/h1_debug.py list
 python tools/h1_debug.py screenshot build/screen.png
 python tools/h1_debug.py tap 106 52
 python tools/h1_debug.py press ESCAPE --ticks 8
+python tools/h1_debug.py --report build/usb-diag.json usb-diag
 ```
 
 退出目标程序、回到空闲网格桌面后，可一条命令更新并运行完整BDA：
@@ -53,7 +58,13 @@ skill需要这份仓库及PC依赖；单独安装skill不会安装调试器或�
 
 ## 截图
 
-以下均为真机480×272原尺寸截图：
+以下为v1.0.2调频恢复验收的真机480×272原尺寸截图：
+
+|软件恢复后前台BDA继续运行|退出测试BDA后返回桌面|
+|---|---|
+|![调频恢复后的前台测试BDA](docs/evidence/h1-debug-clock-foreground.png)|![恢复后的原生桌面](docs/evidence/h1-debug-clock-desktop.png)|
+
+以下为2026-10-17文件部署版的历史真机截图：
 
 |刷新桌面显示V2名称|实际运行V2完整BDA|
 |---|---|
@@ -87,20 +98,26 @@ pip、工具链、构建命令；无需重新下载SDK。
 
 ## 验证
 
-当前v1.0.1与已安装并测试的二进制逐字节相同；它修复v1.0.0源码ZIP的SDK bundle历史缺项，BDA和skill保持一致：
+当前v1.0.2与2026-10-19已安装并测试的二进制逐字节相同：
 
 ```text
-SHA256 4214dbc11266c59359dac38d3ad6386c3d727e0f534a6520e952c5872cbd8b3d
-image_id 7195598f
-BDA 98,828 bytes / resident RAM 725,472 bytes
+SHA256 bf2934e44ae4d3bdc191acb10f61ec7f3c8d5b866bb4d4f2042dd6479dc4d412
+image_id 71a0983b
+BDA 101,708 bytes / resident RAM 727,104 bytes
 ```
 
-真机通过同一USB会话V1→V2完整更新、桌面名称刷新、实际运行、文件管理、
-后台内存与代码执行、触摸/按键、原尺寸截图、10次串口重开、再次运行自身关闭及U盘恢复。
-32KB测试BDA上传并提交校验约2.9～3.6秒；这不是任意文件的速度保证。
-详见 [验收记录](docs/h1-debug.md) 和 [机器可读证据](docs/evidence/h1-debug-deploy-hardware-20261017.json)。
+本版真机通过桌面及动画BDA内两轮384MHz短测试：每轮32次32KiB RAM校验无错、CPU校验一致，
+恢复336MHz，失步后由软件重新枚举恢复。每轮执行命令仅发送一次，原驻留服务没有重启。
+恢复后的前台动画、原尺寸截图、后台512字节专属RAM读写/恢复释放、代码替换与BSS执行、
+ESC返回、测试文件清理及10次串口重开均通过。
+详见 [本版诊断说明](docs/usb-diagnostics.md) 和 [本版真机证据](docs/evidence/h1-debug-clock-usb-hardware-20261019.json)。
 
-公开CI执行139项离线测试及2个独立GNU重定位比较，并从实际源码ZIP离线恢复SDK、重建和核对发布哈希。
+完整BDA V1→V2更新、全部文件管理、再次运行自身关闭与普通U盘恢复的历史物理验收，
+属于`4214dbc1…bd8b3d`构建，见 [历史验收](docs/h1-debug.md)。本SHA未重跑物理关闭/磁盘恢复
+与完整固件模拟器；相关模型回归通过，验证标记按实际范围保留。
+
+公开CI执行156项主机、编译MIPS USB、传输及验收工具的离线测试和2个独立GNU重定位比较，
+并从实际源码ZIP离线恢复SDK、重建和核对发布哈希。
 它不连接真机、不运行私有固件；硬件验证通过精确二进制匹配绑定已有记录。
 更多本地、私有固件及真机测试步骤见 [测试说明](tests/README.md)。
 

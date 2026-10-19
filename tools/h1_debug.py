@@ -35,6 +35,14 @@ STATUS_FIELDS = ("version", "state", "usb_configured", "usb_fault", "usb_resets"
 CAP_FIELDS = ("version", "features", "max_payload", "ram_start", "ram_size",
               "module_abi", "forced_preemption", "tick_hz")
 TOUCH_FIELDS = ("x", "y", "pressed", "lease_remaining")
+USB_SNAPSHOT_FIELDS = ("tick", "fault_reason", "events", "cpccr", "cppcr", "clkgr", "opcr",
+                       "cp0_status", "intc_imr", "pd_mask", "pd_pin", "pd_flag", "power",
+                       "intr_txe", "intr_rxe", "intr_usbe", "frame", "address", "index",
+                       "configured", "resets", "session_epoch", "rx_packets", "tx_packets")
+USB_FAULT_REASONS = {1: "endpoint_tx_irq_enabled", 2: "endpoint_rx_irq_enabled",
+                     4: "usb_bus_irq_enabled", 8: "native_usb_irq_unmasked",
+                     16: "native_cable_irq_unmasked", 32: "high_speed_enabled",
+                     64: "bus_reset_timeout", 128: "clock_phy_or_ownership_guard"}
 SCREEN_FIELDS = ("token", "width", "height", "stride", "format", "total", "source", "tick")
 FILE_STATUS_FIELDS = ("version", "state", "token", "size", "received", "expected_crc",
                       "actual_crc", "verify_offset", "error", "fs_errno", "flags",
@@ -382,6 +390,31 @@ class Client:
         if result["version"] != 1:
             raise ProtocolError("Unsupported STATUS version")
         return result
+
+    def usb_diagnostics(self):
+        if not (self._caps or self.capabilities())["features"] & 0x1000:
+            raise RuntimeError("This resident has no retained USB diagnostics; install the diagnostic BDA and restart H1")
+        data = self.rpc(14)
+        if len(data) != 256:
+            raise ProtocolError("USB_DIAG length mismatch")
+        v = struct.unpack("<64I", data)
+        if v[0] not in (1, 2) or v[1] != 64 or v[4] > 1 or v[6] != 24 or (v[0] == 1 and v[7]):
+            raise ProtocolError("USB_DIAG schema mismatch")
+        def snapshot(values):
+            result = dict(zip(USB_SNAPSHOT_FIELDS, values))
+            result["fault_names"] = [name for bit, name in USB_FAULT_REASONS.items() if result["fault_reason"] & bit]
+            result["usb_clock_gated"] = bool(result["clkgr"] & (1 << 11))
+            result["phy_enabled"] = bool(result["opcr"] & 0x40)
+            return result
+        return {"version": v[0], "open_count": v[2], "fault_count": v[3],
+                "clock_link_reconnects": v[7],
+                "last_fault_valid": bool(v[4]), "last_fault_open": v[5],
+                "current": snapshot(v[8:32]),
+                "last_fault": snapshot(v[32:56]) if v[4] else None,
+                "resident": dict(zip(("state", "stop_request", "last_error", "completed_stops",
+                                      "last_stop_error", "last_stop_tick", "poll_count", "last_poll_tick"), v[56:])),
+                "retention": "same resident allocation across stop/start; cleared by H1 reboot",
+                "read_only": True}
 
     def capabilities(self):
         result = words(self.rpc(9), CAP_FIELDS, "CAPS")
@@ -1099,7 +1132,7 @@ class Client:
             try:
                 result = self.exec_result()
             except TimeoutError as exc:
-                raise TimeoutError("Execution is unconfirmed: native code is not servicing USB; a noncooperative module may require H1 restart") from exc
+                raise TimeoutError("Execution is unconfirmed: no USB reply; this can be transport loss, debugger stop/reset, or native code not polling. Reconnect explicitly and inspect usb-diag/retained results; do not automatically rerun the module") from exc
             if result["state"] == 5:
                 break
             if result["state"] not in (3, 4):
@@ -1210,7 +1243,7 @@ def parser():
     p.add_argument("--timeout", type=float, default=4.0, help="Per-RPC deadline in seconds")
     p.add_argument("--report", type=Path, help="Also save JSON result")
     sub = p.add_subparsers(dest="command", required=True)
-    for command in ("list", "ping", "status", "caps", "release", "stop", "result", "cancel", "touch-status", "release-touch"):
+    for command in ("list", "ping", "status", "caps", "usb-diag", "release", "stop", "result", "cancel", "touch-status", "release-touch"):
         sub.add_parser(command)
     q = sub.add_parser("read"); q.add_argument("address", type=integer); q.add_argument("count", type=integer); q.add_argument("--output", type=Path)
     q = sub.add_parser("write"); q.add_argument("address", type=integer); q.add_argument("file", type=Path, nargs="?"); q.add_argument("--hex", dest="hex_data")
@@ -1349,6 +1382,7 @@ def execute(a):
                     "receipt": str(a.receipt.resolve())}
         if command == "ping": return {"port": client.port, "identity": client.identity}
         if command == "status": return client.status()
+        if command == "usb-diag": return client.usb_diagnostics()
         if command == "caps": return client.capabilities()
         if command == "read": return binary_result(client.read_memory(a.address, a.count), a.output, address=a.address)
         if command == "write": return client.write_memory(a.address, write_data)

@@ -156,6 +156,54 @@ class ProtocolTests(unittest.TestCase):
             c.close()
 
 
+class USBDiagnosticTests(unittest.TestCase):
+    def packet(self, fault=True):
+        v=[0]*64;v[:8]=[1,64,3,1,int(fault),2,24,0]
+        v[8+3]=0x40662220;v[8+6]=0x40
+        v[32+1]=0x88;v[32+3]=0x40673330;v[32+4]=0x1f000520
+        v[32+5]=1<<11;v[56:]=[1,0,0,2,0x188,1234,99,1235]
+        return struct.pack('<64I',*v)
+
+    def test_retained_fault_decode_and_read_only_rpc(self):
+        c,wire=client(lambda op,body:caps(0x1fff) if op==9 else self.packet())
+        r=c.usb_diagnostics()
+        self.assertEqual(r['fault_count'],1)
+        self.assertEqual(r['last_fault']['fault_names'],['native_usb_irq_unmasked','clock_phy_or_ownership_guard'])
+        self.assertTrue(r['last_fault']['usb_clock_gated'])
+        self.assertTrue(r['current']['phy_enabled'])
+        self.assertEqual(r['resident']['last_stop_error'],0x188)
+        self.assertEqual([op for op,_,_ in wire.writes],[1,9,14])
+        self.assertTrue(r['read_only'])
+
+    def test_no_fault_is_not_reported_as_old_fault(self):
+        c,_=client(lambda op,body:caps(0x1fff) if op==9 else self.packet(False))
+        self.assertIsNone(c.usb_diagnostics()['last_fault'])
+
+    def test_clock_reconnect_counter_v2_and_v1_compatibility(self):
+        for version,count in ((1,0),(2,3)):
+            v=list(struct.unpack('<64I',self.packet(False)));v[0]=version;v[7]=count
+            c,wire=client(lambda op,body:caps(0x3fff) if op==9 else struct.pack('<64I',*v))
+            r=c.usb_diagnostics()
+            self.assertEqual(r['clock_link_reconnects'],count)
+            self.assertEqual([op for op,_,_ in wire.writes],[1,9,14])
+
+    def test_diagnostic_unknown_version_or_v1_reserved_rejected(self):
+        for version,count in ((3,0),(1,1)):
+            v=list(struct.unpack('<64I',self.packet(False)));v[0]=version;v[7]=count
+            c,_=client(lambda op,body:caps(0x3fff) if op==9 else struct.pack('<64I',*v))
+            with self.assertRaises(h.ProtocolError):c.usb_diagnostics()
+
+    def test_old_resident_is_rejected_before_diagnostic_command(self):
+        c,wire=client(lambda op,body:caps(0xfff))
+        with self.assertRaisesRegex(RuntimeError,'no retained USB diagnostics'):c.usb_diagnostics()
+        self.assertEqual([op for op,_,_ in wire.writes],[1,9])
+
+    def test_short_or_incompatible_snapshot_rejected(self):
+        for payload in (self.packet()[:-4],bytes(256),struct.pack('<64I',1,64,0,0,2,0,24,0,*([0]*56))):
+            c,_=client(lambda op,body:caps(0x1fff) if op==9 else payload)
+            with self.assertRaises(h.ProtocolError):c.usb_diagnostics()
+
+
 class MemoryKeyTests(unittest.TestCase):
     def test_read_and_write_chunking(self):
         memory = bytes(i % 251 for i in range(1300))

@@ -19,6 +19,7 @@
 |11|TOUCH_SET|x,y,pressed,lease ticks|空；pressed=1按下/移动/续租，pressed=0抬起|
 |12|TOUCH_STATUS|空|x,y,pressed,lease remaining，4字|
 |13|SCREEN_READ_RLE|token,offset,wanted≤16384|token,offset,total,decoded count+≤496编码字节|
+|14|USB_DIAG|空|64字只读诊断；CAPS bit12，布局见[诊断说明](../docs/usb-diagnostics.md)|
 |26|EXEC_INFO|空|原生模块ABI、地址、容量及状态等16字|
 |27|EXEC_BEGIN|image size,memory size,entry offset,CRC32,ABI|空|
 |28|EXEC_WRITE|连续offset+1～508字节|空|
@@ -49,7 +50,12 @@
 |65|FILE_MKDIR|GBK目录路径|空；只创建一级目录|
 |66|FILE_RMDIR|GBK目录路径|空；只删除空目录|
 
-CAPS feature bits0～8分别标识读RAM、写RAM、按键、截图、原生执行、后台任务、停止、触屏、无损截图RLE；bit9文件事务，bit10桌面刷新/启动，bit11文件管理60～66。支持全部扩展时返回 `0xFFF`；仅有文件事务和桌面扩展为`0x7FF`，此前USB加速版是 `0x1FF`；旧触屏构建 `0xFF` 使用原始截图命令7，旧构建 `0x7F` 还不支持opcode11/12。客户端按位协商，STATUS仍为原有16字。驻留状态0初始化、1运行、2关闭中、3关闭、4故障；模块状态0EMPTY、1LOADING、2READY、3PENDING、4RUNNING、5DONE。
+CAPS feature bits0～8分别标识读RAM、写RAM、按键、截图、原生执行、后台任务、停止、触屏、无损截图RLE；bit9文件事务，bit10桌面刷新/启动，bit11文件管理60～66，bit12保留USB诊断，bit13调频后IN失步的软件重连。当前开发版`0x3FFF`；文件部署发布版`0xFFF`；仅有文件事务和桌面扩展为`0x7FF`，此前USB加速版是 `0x1FF`；旧触屏构建 `0xFF` 使用原始截图命令7，旧构建 `0x7F` 还不支持opcode11/12。客户端按位协商，STATUS仍为原有16字。驻留状态0初始化、1运行、2关闭中、3关闭、4故障；模块状态0EMPTY、1LOADING、2READY、3PENDING、4RUNNING、5DONE。
+
+bit13只在观察到时钟寄存器变化、IN持续占用80个raw tick且无EXEC/文件事务/加载临界工作时，
+以SOFTCONN产生一次软件重新枚举，不重启驻留或重放命令。旧串口句柄失效后应重新握手读取保留结果。
+USB_DIAG版本2第7字为累计软件重连数，版本1该字保留0；其余64字布局不变。
+详见[时钟/USB诊断与实测边界](../docs/usb-diagnostics.md)。
 
 文件路径为设备绝对路径 `A:\` 或 `B:\`，严格GBK编码，不带NUL，最长240字节；不是PC的F:/G:挂载盘符。拒绝`.`、`..`及尾随点/空格组件，GBK双字节尾部的0x5C不是路径分隔符。上传父目录必须存在，并为15字节临时文件名留出路径空间。文件大小0～0x7FFFFFFF；支持零字节文件。WRITE只接受当前连续offset，重发相同offset也报错。COMMIT ACK后应轮询STATUS；客户端不得把ACK当成功或自动重发BEGIN/WRITE/COMMIT。GET每次范围必须在打开时取得的长度内；GET没有设备整文件CRC，客户端下载CRC/SHA256仅表示收到的字节。
 

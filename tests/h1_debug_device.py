@@ -65,6 +65,10 @@ class ResidentUSB:
         self.available = bytearray()
         self.held = bytearray()
         self.packet_sizes = []
+        self.double_in = False
+        self.ack_in = True
+        self.in_banks = []
+        self.bulk_csr_writes = []
         self.closed = False
         self.index = 0
         self.ui = {0: 0, 1: 0x60, 6: 3, 8: 2, 0xB: 5, 0xE: 0}
@@ -97,6 +101,9 @@ class ResidentUSB:
         self.control(0, 9, 1)
 
     def bus_reset(self):
+        if self.double_in:
+            self.in_banks.clear(); self.tx[1].clear(); self.ep[1][0x12] = 0
+            self.held.clear()
         self.host_in_toggle = {1: 0, 2: 0}
         self.host_out_toggle = {1: 0, 2: 0}
         self.events = 4
@@ -215,11 +222,21 @@ class ResidentUSB:
                 if value & 2: ep[off] |= 2
                 if value == 0: ep[off] = 0
             elif off == 0x12:
+                self.bulk_csr_writes.append((self.index, value))
                 if value & 8:
                     assert ep[off] & 1, "TX FLUSHFIFO without INPKTRDY corrupts data"
                     self.tx[self.index].clear()
                 if value & 0x40: self.device_in_toggle[self.index] = 0
-                ep[off] = value & 1
+                if self.double_in and self.index == 1:
+                    if value & 8 and self.in_banks: self.in_banks.pop(0)
+                    if value & 1:
+                        assert len(self.in_banks) < 2, "IN FIFO banks full"
+                        self.in_banks.append(bytes(self.tx[1])); self.tx[1].clear()
+                    # PM 21.9.1.2: a free second bank clears InPktRdy while
+                    # FIFONotEmpty stays set. ACK timing is independent.
+                    ep[off] = (2 if self.in_banks else 0) | (1 if len(self.in_banks) == 2 else 0)
+                else:
+                    ep[off] = value & 1
             elif off == 0x16:
                 if value & 0x10:
                     assert ep[off] & 1, "RX FLUSHFIFO without OUTPKTRDY corrupts data"
@@ -242,23 +259,30 @@ class ResidentUSB:
                 self.duplicates["out"] += 1
             self.host_out_toggle[1] ^= 1  # ACK, including a duplicate packet.
         self.call("transport_poll" if "transport_poll" in self.symbols else "transport_poll.part.0")
-        if self.ep[1][0x12] & 1:
+        if self.double_in and self.ack_in and self.in_banks:
+            block = self.in_banks.pop(0)
+            self.ep[1][0x12] = 2 if self.in_banks else 0
+            self.deliver_in(block)
+        elif not self.double_in and self.ep[1][0x12] & 1:
             block = bytes(self.tx[1]); self.tx[1].clear(); self.ep[1][0x12] = 0
-            self.packet_sizes.append(len(block))
-            if self.device_in_toggle[1] == self.host_in_toggle[1]:
-                self.held.extend(block)
-                if len(block) < 64:
-                    self.available.extend(self.held); self.held.clear()
-                self.host_in_toggle[1] ^= 1
-            else:
-                self.duplicates["in"] += 1
-            self.device_in_toggle[1] ^= 1  # ACK, including a duplicate packet.
+            self.deliver_in(block)
         if self.ep[0][0x12] & 2:
             self.tx[0].clear(); self.ep[0][0x12] &= ~2
         # Same launch condition as resident_worker, outside the active RPC.
         if (self.word(self.symbols["exec_diag"]) == 3 and
                 not self.word(self.symbols["protocol"] + 1060) and not self.ep[1][0x12] & 1):
             self.call("exec_invoke", self.symbols["module_api"])
+
+    def deliver_in(self, block):
+        self.packet_sizes.append(len(block))
+        if self.device_in_toggle[1] == self.host_in_toggle[1]:
+            self.held.extend(block)
+            if len(block) < 64:
+                self.available.extend(self.held); self.held.clear()
+            self.host_in_toggle[1] ^= 1
+        else:
+            self.duplicates["in"] += 1
+        self.device_in_toggle[1] ^= 1  # ACK, including a duplicate packet.
 
     def reset_input_buffer(self):
         self.available.clear()
@@ -286,7 +310,7 @@ class ActualResidentTests(unittest.TestCase):
 
     def test_identity_status_caps_and_relocated_memory(self):
         self.assertEqual(self.c.identity, host.IDENTITY.decode())
-        self.assertEqual(self.c.capabilities()["features"], 0xFFF)
+        self.assertEqual(self.c.capabilities()["features"], 0x3FFF)
         state = self.c.status()
         self.assertEqual(state["resident_base"], self.usb.base)
         self.assertEqual((state["usb_configured"], state["usb_resets"], state["usb_fault"]), (1, 1, 0))
@@ -303,6 +327,39 @@ class ActualResidentTests(unittest.TestCase):
         self.assertEqual(self.usb.packet_sizes[-2:], [64, 0])
         self.assertEqual(self.c.rpc(1), host.IDENTITY)
         self.assertFalse(self.usb.held)
+
+    def test_double_fifo_can_queue_tail_or_zlp_before_first_ack(self):
+        # Hardware capture: reply size 76, offset 64, TXCSR=0x2002. Packet
+        # readiness and complete drain are different predicates. Model two
+        # banks, hold ACKs, and require the real MIPS transport to fill both.
+        usb = self.usb
+        usb.double_in, usb.ack_in = True, False
+        data = bytes(range(60))
+        usb.put(0x83C80000, data)
+        for count, sizes in ((60, [64, 12]), (48, [64, 0])):
+            usb.packet_sizes.clear(); usb.bulk_csr_writes.clear()
+            usb.pending.extend(host.frame(3, 700, struct.pack("<II", 0x83C80000, count)))
+            for _ in range(8): usb.pump()
+            self.assertEqual(list(map(len, usb.in_banks)), sizes)
+            self.assertEqual(usb.call("debug_usb_tx_idle", usb.symbols["usb"]), 0)
+            self.assertTrue(all(value & 2 for ep, value in usb.bulk_csr_writes if ep == 1 and value & 1))
+            usb.ack_in = True
+            received = usb.read(16 + count)
+            self.assertEqual(received, host.frame(0x83, 700, data[:count]))
+            self.assertEqual(usb.packet_sizes, sizes)
+            usb.pump()
+            self.assertEqual(usb.call("debug_usb_tx_idle", usb.symbols["usb"]), 1)
+            self.assertEqual(usb.duplicates["in"], 0)
+            usb.ack_in = False
+
+    def test_bulk_write_waits_for_ready_or_stall_without_flushing(self):
+        usb = self.usb
+        for csr in (1, 3, 0x10, 0x12):
+            usb.ep[1][0x12] = csr
+            before = len(usb.bulk_csr_writes)
+            self.assertEqual(usb.call("debug_usb_write", usb.symbols["usb"], 0x83C80000, 12), 0)
+            self.assertEqual(len(usb.bulk_csr_writes), before)
+            self.assertFalse(usb.tx[1])
 
     def test_file_transaction_blocks_module_and_desktop_start(self):
         self.usb.file_busy = True
@@ -623,6 +680,137 @@ int h1_module_entry(const h1_exec_api *a,h1_exec_call *c){
                 self.assertEqual(usb.contact, (90, 80, 0))
                 self.assertEqual(usb.word(usb.symbols["commands"]), previous_commands)
                 self.assertEqual(usb.get(0x83C80000, 3), bytes(3))
+
+    def test_clock_and_bus_divider_changes_alone_keep_rpc_working(self):
+        for cpccr,cppcr in ((0x40673330,0x1f000520),(0x40662220,0x1b000520)):
+            self.usb.put(0xb0000000,struct.pack('<I',cpccr))
+            self.usb.put(0xb0000010,struct.pack('<I',cppcr))
+            r=self.c.usb_diagnostics()
+            self.assertEqual((r['current']['cpccr'],r['current']['cppcr']),(cpccr,cppcr))
+            self.assertFalse(r['last_fault_valid'])
+            self.assertEqual(self.c.rpc(1),host.IDENTITY)
+
+    def test_first_fault_survives_polling_and_same_allocation_restart(self):
+        usb=self.usb
+        usb.put(0xb0000000,struct.pack('<I',0x40673330))
+        usb.put(0xb0000010,struct.pack('<I',0x1f000520))
+        usb.put(0xb0000020,struct.pack('<I',1<<11))
+        usb.pump()
+        self.assertEqual(usb.word(usb.base+32),0x180)
+        fault=usb.get(usb.symbols['last_fault'],96)
+        self.assertEqual(struct.unpack_from('<I',fault,3*4)[0],0x40673330)
+        self.assertEqual(struct.unpack_from('<I',fault,5*4)[0],1<<11)
+        usb.ui[6]=3
+        for _ in range(3):usb.pump()
+        self.assertEqual(usb.get(usb.symbols['last_fault'],96),fault)
+        self.assertEqual(usb.word(usb.symbols['diagnostic_faults']),1)
+        usb.ui[6]=0
+        # Close restores hardware; the actual resident allocation/BSS remains.
+        usb.call('resident_shutdown',usb.base)
+        self.assertEqual(usb.word(usb.base+24),3)
+        usb.put(0xb0000000,struct.pack('<I',0x40662220))
+        usb.put(0xb0000010,struct.pack('<I',0x1b000520))
+        self.assertEqual(usb.call('resident_init',usb.base),0)
+        usb.put(usb.base+24,struct.pack('<I',1))
+        usb.pending.clear();usb.available.clear();usb.held.clear()
+        usb.bus_reset();usb.control(0,9,1)
+        c=host.Client(transport=usb);r=c.usb_diagnostics()
+        self.assertEqual((r['open_count'],r['fault_count'],r['last_fault_open']),(2,1,1))
+        self.assertEqual(r['last_fault']['cpccr'],0x40673330)
+        self.assertTrue(r['last_fault']['usb_clock_gated'])
+        self.assertEqual(r['current']['cpccr'],0x40662220)
+        self.assertFalse(r['current']['usb_clock_gated'])
+        self.assertEqual(r['resident']['last_stop_error'],0x180)
+        self.assertEqual(c.rpc(1),host.IDENTITY)
+
+    def test_diagnostic_read_does_not_acknowledge_interrupt_events(self):
+        usb=self.usb;uaddr=usb.symbols['usb']
+        previous_index=usb.index
+        usb.events=4
+        usb.call('debug_usb_diagnostics',uaddr,0x83c80000)
+        self.assertEqual(usb.events,4)
+        self.assertEqual(usb.word(usb.symbols['diagnostic_faults']),0)
+        self.assertEqual(usb.index,previous_index)
+
+    def test_usb_diagnostics_allowed_during_execution_and_rejects_payload(self):
+        self.usb.put(self.usb.symbols['exec_diag'],struct.pack('<I',4))
+        self.assertEqual(self.c.usb_diagnostics()['version'],2)
+        with self.assertRaises(host.DeviceError) as caught:self.c.rpc(14,b'x')
+        self.assertEqual(caught.exception.status,1)
+
+    def queue_clock_stall(self, *, change_clock=True):
+        usb=self.usb
+        usb.double_in,usb.ack_in=True,False
+        if change_clock:
+            usb.put(0xb0000000,struct.pack('<I',0x40673330))
+            usb.put(0xb0000010,struct.pack('<I',0x1f000520))
+        usb.pending.extend(host.frame(2,777))
+        for _ in range(8):usb.pump()
+        self.assertEqual(list(map(len,usb.in_banks)),[64,16])
+        return usb
+
+    def test_clock_stall_reconnects_once_without_restarting_or_losing_output(self):
+        usb=self.queue_clock_stall()
+        usb.put(usb.symbols['exec_diag'],struct.pack('<I',5))
+        output=usb.symbols['module_output']+32
+        usb.put(output,b'kept output')
+        for _ in range(110):
+            if usb.word(usb.symbols['diagnostic_reconnects']):break
+            usb.pump()
+        self.assertEqual(usb.word(usb.symbols['diagnostic_reconnects']),1)
+        self.assertEqual(usb.ui[1],0)
+        self.assertEqual(usb.word(usb.symbols['diagnostic_opens']),1)
+        self.assertEqual(usb.word(usb.symbols['diagnostic_faults']),0)
+        self.assertEqual(usb.word(usb.base+24),1)
+        self.assertEqual(usb.word(usb.symbols['exec_diag']),5)
+        self.assertEqual(usb.get(output,11),b'kept output')
+        for _ in range(11):usb.pump()
+        self.assertEqual(usb.ui[1],0)
+        usb.pump();self.assertEqual(usb.ui[1],0x40)
+        usb.pending.clear();usb.available.clear();usb.held.clear();usb.ack_in=True
+        usb.bus_reset();usb.control(0,9,1)
+        c=host.Client(transport=usb)
+        self.assertEqual(c.usb_diagnostics()['clock_link_reconnects'],1)
+        self.assertEqual(c.rpc(1),host.IDENTITY)
+        self.assertEqual(usb.get(output,11),b'kept output')
+        c.stop();usb.call('resident_shutdown',usb.base)
+        self.assertEqual(usb.word(usb.base+24),3)
+        self.assertEqual((usb.imr,usb.pdmask),(0,0))
+        self.assertEqual(usb.word(usb.symbols['diagnostic_reconnects']),1)
+
+    def test_tx_stall_without_clock_change_never_reconnects(self):
+        usb=self.queue_clock_stall(change_clock=False)
+        for _ in range(120):usb.pump()
+        self.assertNotEqual(usb.ui[1],0)
+        self.assertEqual(usb.word(usb.symbols['diagnostic_reconnects']),0)
+
+    def test_clock_reconnect_waits_for_exec_file_and_loader(self):
+        usb=self.queue_clock_stall()
+        for state in ('exec','file','loader'):
+            usb.put(usb.symbols['exec_diag'],struct.pack('<I',4 if state=='exec' else 5))
+            usb.file_busy=state=='file';usb.shell_state=1 if state=='loader' else 0
+            for _ in range(90):usb.pump()
+            self.assertEqual(usb.word(usb.symbols['diagnostic_reconnects']),0,state)
+        usb.file_busy=False;usb.shell_state=0;usb.pump()
+        self.assertEqual(usb.word(usb.symbols['diagnostic_reconnects']),1)
+
+    def test_healthy_clock_change_disarms_watchdog(self):
+        usb=self.usb
+        usb.put(0xb0000000,struct.pack('<I',0x40673330))
+        self.assertEqual(self.c.rpc(1),host.IDENTITY)
+        usb.pump()
+        self.assertEqual(usb.word(usb.symbols['clock_armed']),0)
+        self.queue_clock_stall(change_clock=False)
+        for _ in range(120):usb.pump()
+        self.assertEqual(usb.word(usb.symbols['diagnostic_reconnects']),0)
+
+    def test_ownership_fault_still_stops_instead_of_clock_reconnect(self):
+        usb=self.queue_clock_stall()
+        usb.put(0xb0000020,struct.pack('<I',1<<11))
+        for _ in range(90):usb.pump()
+        self.assertEqual(usb.word(usb.symbols['diagnostic_reconnects']),0)
+        self.assertEqual(usb.word(usb.base+28),1)
+        self.assertNotEqual(usb.word(usb.base+32),0)
 
 
 if __name__ == "__main__":

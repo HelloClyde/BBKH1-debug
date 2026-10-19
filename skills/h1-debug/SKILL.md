@@ -17,7 +17,7 @@ description: 使用步步高 H1/Y100 V1.41 的后台 USB 调试器 H1Debug，管
 
 - 日常测试目标 BDA、截图、输入、内存和 EXEC，读取 [operations.md](references/operations.md)。
 - 更新完整 BDA、管理设备文件/目录、刷新桌面和运行新版，读取 [deployment.md](references/deployment.md)。
-- 修改/安装 H1Debug、诊断 USB、验证驻留生命周期，读取 [maintenance.md](references/maintenance.md)。
+- 修改/安装 H1Debug、诊断 USB/CPU调频掉线、恢复连接或验证驻留生命周期，读取 [maintenance.md](references/maintenance.md)。
 
 设备仅绑定 **H1/Y100 V1.41**。调试 USB 为 `07C4:A4A6`，普通磁盘为 `07C4:A4A5`，握手必须精确为 `H1DEBUG/1 V1.41 RESIDENT`。用客户端 `list` 发现当前端口；COM4、F:、G: 都只是历史实例。有多个匹配设备或身份不符时先区分目标。
 
@@ -31,6 +31,7 @@ description: 使用步步高 H1/Y100 V1.41 的后台 USB 调试器 H1Debug，管
 - 点击/按键 ACK 是事件已接受，不能等同于前台已完成绘制。桌面刷新DONE和`menu_idle=1`也可能早于屏幕重绘；短暂让前台调度后再截取新快照，不能用立即捕获的旧画面判定刷新失败。菜单坐标以当前截图为准。
 - RAM 写入针对已识别的目标数据或模块明确拥有的分配。通用内存验收用现有工具新分配512字节、恢复后释放，不猜空闲地址。模块有活分配时，先运行它的清理入口再替换模块。
 - EXEC 没有内存隔离、异常恢复或强制抢占。长任务定期 `api->poll_cancel()`；预算和 `cancel` 不能终止不协作死循环。失步/超时后保存结果未知的证据，不盲目重发写内存、执行或触控命令。
+- CAPS bit12提供保留USB诊断，bit13提供调频失步的软件重新枚举。旧串口句柄失效后重新发现设备并握手，先核对原驻留/模块身份并读取保留结果；这不等于服务重启，也不代表可以自动重发命令。具体判断及真机验证范围见维护页。
 
 ## 验证与交付
 

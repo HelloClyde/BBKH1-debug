@@ -26,6 +26,7 @@ static debug_protocol protocol;
 static uint8_t screen[480u*272u*4u] __attribute__((aligned(32)));
 static uint32_t screen_meta[6],screen_token,screen_tick,screen_valid;
 static uint32_t commands,polls,last_poll,reset_seen,cable_seen,configured_seen,session_seen,zlp_pending,stop_tick;
+static uint32_t completed_stops,last_stop_error,last_stop_tick;
 static int in_poll;
 /* Readable with RAM_READ and build symbols; no wire/status ABI change. */
 static volatile uint32_t service_calls,active_windows,window_polls_max,frame_limit_exits;
@@ -58,7 +59,7 @@ static int intersects(uint32_t a,uint32_t n,uint32_t b,uint32_t m)
 static unsigned dispatch(unsigned op,const uint8_t *p,unsigned n,uint8_t *out,unsigned *status)
 {
     *status=0;++commands;
-    if(exec_active() && op!=1 && op!=2 && op!=3 && op!=9 && op!=10 && op!=12 && op!=26 && op!=31 && op!=32 && op!=40 && op!=49 && op!=52){*status=2;return 0;}
+    if(exec_active() && op!=1 && op!=2 && op!=3 && op!=9 && op!=10 && op!=12 && op!=14 && op!=26 && op!=31 && op!=32 && op!=40 && op!=49 && op!=52){*status=2;return 0;}
     if((op==27 || op==30 || op==50 || op==51) && rd_files_busy()){*status=2;return 0;}
     if(op==27 || op==30 || op==41 || op==43 || op==45 || (op>=60 && op<=66)){
         uint32_t shell[8];rd_shell_status(shell);
@@ -111,7 +112,7 @@ static unsigned dispatch(unsigned op,const uint8_t *p,unsigned n,uint8_t *out,un
         if(n!=4)break;if(!screen_valid || get32(p)!=screen_token){*status=2;return 0;}
         screen_valid=0;return 0;
     case 9: {
-        if(n)break;uint32_t v[]={1,0xfff,512,0x80000000u,0x04000000u,1,0,0};return words(out,v,8);
+        if(n)break;uint32_t v[]={1,0x3fff,512,0x80000000u,0x04000000u,1,0,0};return words(out,v,8);
     }
     case 10:
         if(n)break;if(rd_shell_stop_blocked()){*status=2;return 0;}
@@ -135,6 +136,12 @@ static unsigned dispatch(unsigned op,const uint8_t *p,unsigned n,uint8_t *out,un
         if(!encoded || !consumed){*status=3;return 0;}
         put32(out,token);put32(out+4,offset);put32(out+8,screen_meta[4]);put32(out+12,consumed);
         return 16u+encoded;
+    }
+    case 14: {
+        if(n)break;uint32_t v[64];debug_usb_diagnostics(&usb,v);v[1]=64;
+        v[56]=rd_control.state;v[57]=rd_control.stop_request;v[58]=rd_control.last_error;
+        v[59]=completed_stops;v[60]=last_stop_error;v[61]=last_stop_tick;
+        v[62]=polls;v[63]=last_poll;return words(out,v,64);
     }
     case 26: {
         if(n)break;uint32_t v[16];exec_info(v);return words(out,v,16);
@@ -207,9 +214,9 @@ static unsigned transport_poll(void)
                 protocol.tx_offset+=count;
                 if(protocol.tx_offset==protocol.tx_size)zlp_pending=(protocol.tx_size%64u)==0;
             }
-            if(protocol.tx_offset==protocol.tx_size && debug_usb_tx_idle(&usb)){
+            if(protocol.tx_offset==protocol.tx_size){
                 if(zlp_pending){if(debug_usb_write(&usb,protocol.tx,0)){zlp_pending=0;result|=TRANSPORT_PROGRESS;}}
-                else {protocol.tx_size=protocol.tx_offset=0;result|=TRANSPORT_PROGRESS;}
+                else if(debug_usb_tx_idle(&usb)){protocol.tx_size=protocol.tx_offset=0;result|=TRANSPORT_PROGRESS;}
             }
         }else if(!rd_control.stop_request){
             uint8_t packet[64];int count=debug_usb_read(&usb,packet,sizeof packet);
@@ -217,6 +224,8 @@ static unsigned transport_poll(void)
             else if(count<0){rd_control.last_error=0x200;rd_control.stop_request=1;}
         }
     }
+    if(debug_usb_clock_recover(&usb,!exec_active() && !rd_control.stop_request &&
+                               !rd_files_busy() && !rd_shell_stop_blocked()))result|=TRANSPORT_RESTART;
     rd_keys_poll(fw_tick());rd_touch_poll(fw_tick());in_poll=0;return result;
 }
 static void __attribute__((noinline)) transport_service(void)
@@ -290,7 +299,7 @@ static void resident_shutdown(rd_header *h)
     debug_usb_close(&usb);
     result=fw_wake_remove();
     if(result){h->last_error=0x400u|(unsigned)result;return;}
-    screen_valid=0;h->state=RD_STOPPED;
+    screen_valid=0;++completed_stops;last_stop_error=h->last_error;last_stop_tick=fw_tick();h->state=RD_STOPPED;
 }
 static void resident_worker(void *arg)
 {

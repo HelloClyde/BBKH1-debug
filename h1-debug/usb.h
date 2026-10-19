@@ -24,5 +24,12 @@ int debug_usb_tx_idle(debug_usb *u);
 int debug_usb_cable_connected(void);
 /* Read-only last received full-speed USB frame number (11 bits). */
 unsigned debug_usb_frame(void);
+/* Clock-change-only TX watchdog. Caller permits a software reconnect only
+ * outside EXEC/file/loader work. Never restarts the resident or retries RPC. */
+int debug_usb_clock_recover(debug_usb *u,int may_reconnect);
+/* Read-only diagnostics. First fault survives same-resident stop/start. */
+#define DEBUG_USB_SNAPSHOT_WORDS 24u
+#define DEBUG_USB_DIAG_WORDS 56u
+void debug_usb_diagnostics(const debug_usb *u,uint32_t out[DEBUG_USB_DIAG_WORDS]);
 void debug_usb_close(debug_usb *u);
 #endif
