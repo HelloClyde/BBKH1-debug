@@ -61,6 +61,12 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python tests/h1_debug_transport.py --existing-build
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tests/h1_debug_esp.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tests/h1_esp_serial.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tests/h1_debug_attached.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python tests/h1_debug_hardware.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python tools/test_h1_debug_foreground_helper.py
@@ -105,4 +111,4 @@ jobs:
           test "$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")" = "$RELEASE_COMMIT"
           python scripts/package_release.py --verify --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT"
           (cd dist/release && sha256sum -c SHA256SUMS.txt)
-          gh release create "$RELEASE_TAG" dist/release/* --verify-tag --title "H1Debug $RELEASE_TAG" --notes-file dist/release/RELEASE-NOTES.md
+          gh release create "$RELEASE_TAG" dist/release/* --verify-tag --prerelease --title "H1Debug $RELEASE_TAG 预览版" --notes-file dist/release/RELEASE-NOTES.md

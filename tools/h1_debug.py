@@ -309,7 +309,11 @@ class Client:
         self._lock = threading.Lock()
         self._caps = None
         self._touch_position = None
-        if transport is None:
+        if transport is None and port and port.casefold().startswith('esp://'):
+            from h1_debug_esp import ESPTransport
+            self.port = port
+            self.serial = ESPTransport(port[6:], timeout=timeout)
+        elif transport is None:
             candidates = ports()
             if port:
                 candidates = [p for p in candidates if p.device.casefold() == port.casefold()]
@@ -1239,7 +1243,7 @@ SECTIONS {
 
 def parser():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--port", help="An enumerated H1 VID/PID port; arbitrary COM ports are never opened")
+    p.add_argument("--port", help="An enumerated H1 VID/PID port, or esp://COM6 for an explicitly selected ESP USB2 bridge")
     p.add_argument("--timeout", type=float, default=4.0, help="Per-RPC deadline in seconds")
     p.add_argument("--report", type=Path, help="Also save JSON result")
     sub = p.add_subparsers(dest="command", required=True)

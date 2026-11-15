@@ -273,12 +273,11 @@ static const h1_exec_api module_api={1,sizeof(h1_exec_api),fw_tick,module_poll,m
 static int resident_init(rd_header *h)
 {
     if(h!=&rd_control || h->magic!=RD_MAGIC || !fw_matches())return 1;
-    if(debug_usb_cable_connected())return 2;
     protocol=(debug_protocol){0};screen_valid=0;zlp_pending=0;in_poll=0;
     reset_seen=cable_seen=configured_seen=session_seen=0;stop_tick=0;
     h->last_error=0;h->stop_request=0;(void)exec_reset();
     int result=rd_files_init();if(result){h->last_error=0x500u|(unsigned)result;return 5;}
-    result=debug_usb_open(&usb);if(result)return result;
+    result=debug_usb_open_attached(&usb);if(result)return result;
     result=rd_io_init();if(result){debug_usb_close(&usb);return result;}
     result=rd_shell_init();if(result){h->last_error=0x600u|(unsigned)result;return 6;}
     result=fw_wake_install(h);

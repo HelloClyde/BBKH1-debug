@@ -17,6 +17,9 @@ typedef struct {
     uint16_t control_lines;
 } debug_usb;
 int debug_usb_open(debug_usb *u);
+/* Foreground application has released the resident and owns the native GUI.
+ * Present a software disconnect before re-enumerating an already attached host. */
+int debug_usb_open_attached(debug_usb *u);
 void debug_usb_poll(debug_usb *u);
 int debug_usb_read(debug_usb *u,uint8_t *data,unsigned capacity);
 int debug_usb_write(debug_usb *u,const uint8_t *data,unsigned length);

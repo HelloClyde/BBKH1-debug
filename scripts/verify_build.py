@@ -6,7 +6,7 @@ from pathlib import Path
 import hashlib,json,subprocess,sys
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED='bf2934e44ae4d3bdc191acb10f61ec7f3c8d5b866bb4d4f2042dd6479dc4d412'
+EXPECTED='8ec7e7d38b049d48f9c050267f1fa9a27c83c77760fb87af9f55d9d527f32b01'
 SDK='067fe072477861dfc8949d7b1a55279fb92d2548'
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -16,11 +16,11 @@ def save(path,value):Path(path).write_text(json.dumps(value,ensure_ascii=False,i
 def main():
     build=read(ROOT/'dist/H1Debug.build.json')
     assert sha(ROOT/'dist/H1Debug.bda')==build['sha256']==EXPECTED,'Release BDA differs from hardware-tested bytes'
-    assert build['image_id']=='71a0983b' and build['sdk_commit']==SDK
+    assert build['image_id']=='e14aaef1' and build['sdk_commit']==SDK
     assert subprocess.check_output(['git','-C',str(ROOT/'vendor/h1-sdk'),'rev-parse','HEAD'],text=True).strip()==SDK
     for path,digest in build['source_sha256'].items():
         assert sha(ROOT/path)==digest, 'Build input changed: '+path
-    evidence=ROOT/'docs/evidence/h1-debug-clock-usb-hardware-20261019.json'
+    evidence=ROOT/'docs/evidence/h1-debug-esp-hardware-20261115.json'
     h=read(evidence)
     assert h['bda_sha256']==EXPECTED and h['image_id']==build['image_id']
     assert h['hardware_verified'] and h['full_firmware_verified'] is False
@@ -30,7 +30,7 @@ def main():
     assert validate_bda(ROOT/'dist/H1Debug.bda')['ok']
     build.pop('full_firmware_evidence',None)
     build.update(hardware_verified=True,full_firmware_verified=False,
-                 verification_basis='Exact-byte match to targeted 2026-10-19 physical acceptance; CI does not run hardware/private firmware',
+                 verification_basis='Exact-byte match to targeted 2026-11-15 ESP bridge/file acceptance; CI does not run hardware/private firmware',
                  hardware_evidence=evidence.relative_to(ROOT).as_posix(),hardware_scope=h['scope'])
     save(ROOT/'dist/H1Debug.build.json',build)
     save(ROOT/'dist/H1Debug.verification.json',{'bda_sha256':EXPECTED,'image_id':build['image_id'],

@@ -88,7 +88,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--toolchain', type=Path, default=ROOT / '.tools/toolchain/bin')
     args = parser.parse_args()
-    if run(['git', '-C', SDK, 'rev-parse', 'HEAD']).strip() != SDK_COMMIT:
+    if run(['git', '-c', f'safe.directory={SDK.as_posix()}', '-C', SDK, 'rev-parse', 'HEAD']).strip() != SDK_COMMIT:
         raise RuntimeError('SDK revision mismatch')
     BUILD.mkdir(parents=True, exist_ok=True)
     tc = args.toolchain.resolve()

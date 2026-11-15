@@ -1,6 +1,7 @@
 # H1 Debug：后台 USB 调试器
 
 独立应用 [`dist/H1Debug.bda`](../dist/H1Debug.bda)，菜单标题 **H1调试**，仅支持 H1 / Y100 V1.41。
+v1.0.3增加带线启动和ESP桥接工具；桥接使用方法及921600/115200自动探测见[项目首页](../README.md#esp32桥接不用来回换h1数据线)。
 
 v1.0.2新增保留USB诊断与调频失步后的软件重连（CAPS `0x3FFF`），已安装并通过2026-10-19针对性真机回归。重连会短暂重新枚举，PC须重开串口再读取原结果，不会重复执行程序。新SHA为`bf2934e4…4d412`、image_id `71a0983b`，见[调频/USB说明](../docs/usb-diagnostics.md)和[本次验收](../docs/evidence/h1-debug-clock-usb-hardware-20261019.json)。下文完整部署/关闭验收仍属于所列历史SHA。
 
@@ -224,3 +225,5 @@ from h1_debug_preview import preview
 with Client("COM4") as client:
     preview(client, Path("build/h1-preview"))
 ```
+
+ESP桥接速度、当前SHA的验证范围见[本版说明](../docs/release-v1.0.3.md)。

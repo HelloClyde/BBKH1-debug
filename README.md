@@ -6,9 +6,9 @@
 支持按键与单点触摸、480×272原尺寸无损截图、RAM读写、原生测试模块执行、
 完整BDA上传/替换、桌面刷新与运行，以及文件和目录管理。普通BDA更新可全程保持USB连接。
 
-v1.0.2新增保留USB诊断和调频失步后的软件恢复。若变频使发送通道卡住，调试器会在安全时机
-短暂重新枚举USB；PC重开串口后可读取原结果，无需拔线或重新打开“H1调试”。
-它不会重发执行、写入或点击命令。详见 [调频与USB恢复](docs/usb-diagnostics.md)。
+v1.0.3预览版补齐带线启动、ESP32 USB1/USB2调试桥和921600高速串口工具。
+原有直连USB命令、CPU调频软件恢复和文件事务继续可用；本轮真机验收范围为ESP桥接与文件传输，
+不把旧版本的完整硬件结论移用到新SHA。详见[本版说明](docs/release-v1.0.3.md)。
 
 ## 快速开始
 
@@ -45,6 +45,23 @@ python tools/h1_debug.py desktop refresh
 上传经过CRC重读和替换校验。`deploy --no-run`上传并刷新但不运行。
 更新调试器自身的磁盘BDA后仍须重启，不能替换已经驻留的代码。
 完整命令和边界见 [使用手册](h1-debug/README.md) 与 [协议](h1-debug/protocol.md)。
+
+## ESP32桥接（不用来回换H1数据线）
+
+ESP USB1通过数据软OTG接H1，USB2接电脑。H1回到空闲桌面后启动“H1调试”；
+若系统问是否连接USB，选择否。USB2是CH340串口，先确认实际枚举端口，不能用H1旧COM4代替。
+ESP通用固件0.4.5及源码见[H1 SDK](https://github.com/HelloClyde/bbk-h1-bda-sdk/tree/0b1e907a64f84f4f964b4dc6f5dc61e1dc60c05c/sdk/esp32)。
+
+```powershell
+python tools/h1_debug.py --port esp://COM6 status
+python tools/h1_debug.py --port esp://COM6 file put build/data.bin 'A:\data.bin'
+python tools/benchmark_h1_debug_files.py --port esp://COM6 --output build/speed --size 32768 --repeat 2
+```
+
+新工具只用只读INFO自动探测921600/115200，兼容旧ESP固件。H1Debug命令仍按序号/CRC串行确认，
+不会并发重发文件写入或提交。Bridge只转发字节，不替代H1的USB独占关系。
+本轮相同32KiB文件：新建上传8.0→3.4秒，覆盖8.3→5.3秒，下载6.5→约1.7秒；
+全部校验通过、临时文件清理。提速来自ESP固件和电脑工具，H1的CDC波特率字段不代表USB真实线速。
 
 ## Codex skill
 

@@ -168,7 +168,7 @@ static void setup(debug_usb *u,const uint8_t s[8])
     if(s[0]==0x21 && s[1]==0x23 && !index && !length){status(u);return;}
     stall(u);
 }
-int debug_usb_open(debug_usb *u)
+static int open_usb(debug_usb *u,int attached)
 {
     h1_memset(u,0,sizeof *u);
     if(!fw_matches())return 1;
@@ -176,7 +176,7 @@ int debug_usb_open(debug_usb *u)
     if(R32(0x800615d0)!=0x27bdffe8 || R32(0x80062104)!=0x27bdffe8 ||
        R32(0x800623e0)!=0x27bdffe8)return 1;
     /* Refuse takeover of an enumerated/connected disk session. */
-    if(debug_usb_cable_connected())return 2;
+    if(!attached && debug_usb_cable_connected())return 2;
     uint32_t irq=lock();
     u->clock_gate=R32(0xb0000020);u->opcr=R32(0xb0000024);
     u->imr=R32(0xb0001004);u->pdmask=R32(0xb0010320);
@@ -190,11 +190,26 @@ int debug_usb_open(debug_usb *u)
         u->csr[i][0]=R16(U+0x12);u->csr[i][1]=R16(U+0x16);
     }
     u->owned=1;++diagnostic_opens;R8(U)=0;endpoints();R16(U+0x12)=0xc0;
+    if(attached){
+        /* Keep scheduler/touch IRQs live while the host observes disconnect.
+         * USB/cable service stays masked. A competing native worker still
+         * causes a clean failed acquisition, never a second active owner. */
+        unlock(irq);
+        uint32_t start=fw_tick();
+        for(unsigned n=0;n<100u && fw_tick()-start<20u;++n)fw_delay(1);
+        irq=lock();
+        if(!(R32(0xb0001004)&USB_IRQ) || !(R32(0xb0010320)&PD6) ||
+           R16(U+6) || R16(U+8) || R8(U+0xb)){
+            unlock(irq);debug_usb_close(u);return 3;
+        }
+    }
     clock_cpccr=R32(0xb0000000);clock_cppcr=R32(0xb0000010)&~0x400u;
     clock_armed=clock_stall_started=reconnect_phase=0;clock_tx_baseline=0;
     u->line[0]=0;u->line[1]=0xc2;u->line[2]=1;u->line[6]=8;
     R8(U+1)=0x40;unlock(irq);return 0;
 }
+int debug_usb_open(debug_usb *u){return open_usb(u,0);}
+int debug_usb_open_attached(debug_usb *u){return open_usb(u,1);}
 void debug_usb_poll(debug_usb *u)
 {
     if(!u->owned || u->ownership_fault)return;
